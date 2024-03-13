@@ -1,0 +1,29 @@
+/ <h1>短文投稿</h1>
+%h1 短文投稿
+
+/ <%= form_with model: @post, local: true do |f| %>
+= form_with model: @post, local: true do |f|
+	/ <% if @post.errors.any? %>
+	- if @post.errors.any?
+		/ <div id="error_explanation">
+		#error_explanation
+			/ <h2><%= pluralize(@post.errors.count, "error") %> prohibited this post from being saved:</h2>
+			%h2= "#{pluralize(@post.errors.count, "error")} prohibited this post from being saved:"
+			%ul
+				- @post.errors.full_messages.each do |message|
+					%li= message
+
+	/ <div class="field">
+	.field
+		= f.label :content
+		= f.text_area :content, maxlength: 140
+
+	.actions
+		= f.submit
+
+%h2 投稿一覧
+
+- @posts.each do |post|
+	%p= post.content
+	%p= post.created_at
+	%hr

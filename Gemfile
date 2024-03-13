@@ -2,6 +2,10 @@ source "https://rubygems.org"
 
 ruby "3.2.3"
 
+# ADDITIONAL GEMS
+gem "haml-rails"
+gem 'html2haml'
+
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 7.0.4", ">= 7.0.4.3"
 
