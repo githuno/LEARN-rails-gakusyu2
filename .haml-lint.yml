@@ -1,0 +1,5 @@
+linters:
+  RuboCop:
+    enabled: true
+    # Use the rubocop config specified in your project
+    config: .rubocop.yml

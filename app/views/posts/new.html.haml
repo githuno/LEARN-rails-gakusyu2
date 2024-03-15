@@ -1,19 +1,20 @@
-.container.d-flex.flex-column.justify-content-center.align-items-center
-  %h1.text-center.font-weight-bold.mb-4.border-bottom 新規投稿
+-# haml-lint:disable IdNames
+%h1.text-center.font-weight-bold.mb-4.border-bottom
+  新規投稿
 
-  = form_with model: @post, local: true, class: 'flex d-flex flex-column align-items-center w-50' do |f|
-    - if @post.errors.any?
-      #error_explanation
-        %h2= `#{pluralize(@post.errors.count, 'error')} prohibited this post from being saved:`
-        %ul
-          - @post.errors.full_messages.each do |message|
-            %li= message
+.flex.d-flex.flex-column.align-items-center.justify-content-center
+= form_with model: @post do |f|
+  .field.mb-3.w-100
+    = f.label :content, class: 'form-label'
+    = f.text_area :content, class: 'form-control', maxlength: 140
+  .actions.mt-3.d-flex.justify-content-center
+    = f.submit 'Post', class: 'btn btn-primary'
 
-    .field.flex.mb-3.w-100
-      = f.label :content
-      = f.text_area :content, maxlength: 140, class: 'form-control form-control-lg'
+.d-flex.justify-content-center.mt-4
+  = link_to '投稿一覧', posts_path, class: 'btn btn-secondary'
 
-    .actions
-      = f.submit 'Postを作成', class: 'btn btn-primary mt-3'
-
-  = link_to '投稿一覧', posts_path, class: 'btn btn-secondary mt-4'
+/ # ログインしている場合はログアウトボタンを表示
+- if user_signed_in?
+  .d-flex.justify-content-center.mt-4
+    = link_to 'ログアウト', destroy_user_session_path,
+              data: { turbo_method: :delete }, class: 'btn btn-secondary'

@@ -1,12 +1,11 @@
-.container.d-flex.flex-column.justify-content-center.align-items-center
-  %h1.text-center.font-weight-bold.mb-4.border-bottom 全体タイムライン
+%h1.text-center.font-weight-bold.mb-4.border-bottom 全体タイムライン
 
-  = link_to '新規投稿', '/posts/new', class: 'btn btn-primary mb-4'
+= link_to '新規投稿', new_post_path, class: 'btn btn-primary mb-4'
 
-  - @posts.each do |post|
-    .post.flex.d-flex.flex-column.align-items-center.w-50
-      %p
-        = post.content
-      %p
-        = post.created_at
-      %hr.w-50
+- @posts.each do |post|
+  .post.flex.d-flex.flex-column.align-items-center.w-50
+    %p
+      = post.content
+    %p
+      = post.created_at
+    %hr.w-50
