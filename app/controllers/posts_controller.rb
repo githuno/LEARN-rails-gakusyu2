@@ -2,6 +2,11 @@ class PostsController < ApplicationController
   def index
     @posts = Post.all.order(created_at: :desc)
     @post = Post.new
+    render :timeline # index.htmlをレンダリングしないように変更
+  end
+
+  def new
+    @post = Post.new
   end
 
   def create
@@ -10,7 +15,7 @@ class PostsController < ApplicationController
       redirect_to posts_path, notice: 'Post was successfully created.'
     else
       @posts = Post.all.order(created_at: :desc)
-      render :index
+      render :timeline
     end
   end
 
