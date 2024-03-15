@@ -1,29 +1,33 @@
-/ <h1>短文投稿</h1>
-%h1 短文投稿
+-# haml-lint:disable IdNames
 
-/ <%= form_with model: @post, local: true do |f| %>
-= form_with model: @post, local: true do |f|
-	/ <% if @post.errors.any? %>
-	- if @post.errors.any?
-		/ <div id="error_explanation">
-		#error_explanation
-			/ <h2><%= pluralize(@post.errors.count, "error") %> prohibited this post from being saved:</h2>
-			%h2= "#{pluralize(@post.errors.count, "error")} prohibited this post from being saved:"
-			%ul
-				- @post.errors.full_messages.each do |message|
-					%li= message
+.container.d-flex.flex-column.justify-content-center.align-items-center
+  %h1.text-center.font-weight-bold.mb-4.border-bottom 短文投稿
 
-	/ <div class="field">
-	.field
-		= f.label :content
-		= f.text_area :content, maxlength: 140
+  / <%= form_with model: @post, local: true do |f| %>
+  = form_with model: @post, local: true, class: 'flex d-flex flex-column align-items-center w-50' do |f|
+    / <% if @post.errors.any? %>
+    - if @post.errors.any?
+      / <div id="error_explanation">
+      #error_explanation
+        / <h2><%= pluralize(@post.errors.count, "error") %> prohibited this post from being saved:</h2>
+        %h2= `#{pluralize(@post.errors.count, 'error')} prohibited this post from being saved:`
+        %ul
+          - @post.errors.full_messages.each do |message|
+            %li= message
 
-	.actions
-		= f.submit
+    / <div class="field">
+    .field.flex.mb-3.w-100
+      = f.label :content
+      = f.text_area :content, maxlength: 140, class: 'form-control form-control-lg'
 
-%h2 投稿一覧
-
-- @posts.each do |post|
-	%p= post.content
-	%p= post.created_at
-	%hr
+    .actions
+      = f.submit 'Postを作成', class: 'btn btn-primary mt-3'
+  %hr.w-50
+  %h2 投稿一覧
+  - @posts.each do |post|
+    .post.flex.d-flex.flex-column.align-items-center.w-50
+      %p
+        = post.content
+      %p
+        = post.created_at
+      %hr.w-50
