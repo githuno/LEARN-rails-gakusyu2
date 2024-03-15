@@ -4,6 +4,7 @@ ruby '3.2.3'
 
 # ADDITIONAL GEMS
 gem 'bootstrap', '~> 5.3.2'
+gem 'devise'
 gem 'haml-rails'
 gem 'html2haml'
 gem 'jquery-rails'

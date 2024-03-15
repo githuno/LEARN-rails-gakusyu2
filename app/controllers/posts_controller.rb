@@ -1,4 +1,6 @@
 class PostsController < ApplicationController
+  before_action :authenticate_user!, only: %i[new create]
+
   def index
     @posts = Post.all.order(created_at: :desc)
     @post = Post.new
@@ -10,12 +12,13 @@ class PostsController < ApplicationController
   end
 
   def create
-    @post = Post.new(post_params)
+    @post = current_user.posts.build(post_params)
+    puts "Post Params: #{post_params.inspect}" # パラメータの出力
     if @post.save
       redirect_to posts_path, notice: 'Post was successfully created.'
     else
-      @posts = Post.all.order(created_at: :desc)
-      render :timeline
+      puts "Post could not be saved. Errors: #{@post.errors.full_messages}" # 保存失敗とエラーメッセージのログ出力
+      redirect_to posts_path, alert: 'Post could not be created.'
     end
   end
 

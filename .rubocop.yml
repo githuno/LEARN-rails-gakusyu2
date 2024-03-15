@@ -1,0 +1,14 @@
+AllCops:
+  Exclude:
+    - "**/*.haml"
+  TargetRubyVersion: 3.2
+  NewCops: enable
+
+Lint/EmptyFile:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
