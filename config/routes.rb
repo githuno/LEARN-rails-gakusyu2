@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
+  get 'users/show'
   devise_for :users
-  resources :posts, only: %i[index new create]
+  resources :users, only: %i[show update]
+  resources :posts, only: %i[index new create] # %i[...] はシンボルの配列を作成するリテラルで[:index, :new, :create]と同じ
   get 'timeline', to: 'posts#index'
   root 'posts#index'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
