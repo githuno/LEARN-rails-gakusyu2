@@ -1,0 +1,31 @@
+.posts {
+  display: flex;
+  height: 20rem;
+  overflow-x: auto;
+  overflow-y: hidden; /* 縦スクロールバーを非表示にする */
+
+  /* スクロールバーのスタイルをカスタマイズ */
+  &::-webkit-scrollbar {
+    width: 10px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #fff;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+}
+
+.card {
+  flex-shrink: 0;
+  width: 300px;
+  height: auto;
+  margin-right: -10rem; /* カード同士の間隔を狭くする */
+}
