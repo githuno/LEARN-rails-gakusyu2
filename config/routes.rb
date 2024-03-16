@@ -2,6 +2,13 @@ Rails.application.routes.draw do
   get 'users/show'
   devise_for :users
   resources :users, only: %i[show update]
+  resources :users do
+    member do
+      get :following, :followers
+      post :follow
+      delete :unfollow
+    end
+  end
   resources :posts, only: %i[index new create] # %i[...] はシンボルの配列を作成するリテラルで[:index, :new, :create]と同じ
   get 'timeline', to: 'posts#index'
   root 'posts#index'
