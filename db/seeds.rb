@@ -1,9 +1,19 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# ユーザーのダミーデータを作成
+10.times do
+  User.create!(
+    username: Faker::Internet.unique.username(specifier: 5..20, separators: []),
+    password: 'password',
+    password_confirmation: 'password',
+    profile: Faker::Lorem.sentence(word_count: 10),
+    blog_url: Faker::Internet.url
+  )
+end
+
+# ユーザーごとにポストのダミーデータを作成
+User.all.each do |user|
+  5.times do
+    user.posts.create!(
+      content: Faker::Lorem.sentence(word_count: 10)
+    )
+  end
+end
