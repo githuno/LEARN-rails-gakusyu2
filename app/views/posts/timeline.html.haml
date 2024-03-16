@@ -1,11 +1,16 @@
 %h1.text-center.font-weight-bold.mb-4.border-bottom 全体タイムライン
 
 = link_to '新規投稿', new_post_path, class: 'btn btn-primary mb-4'
+- if user_signed_in?
+  = link_to 'マイページ', user_path(current_user), class: 'btn btn-secondary mb-4'
 
 - @posts.each do |post|
   .post.flex.d-flex.flex-column.align-items-center.w-50
+    %hr.w-50
     %p
       = post.content
+    %p
+      = link_to post.user.username, user_path(post.user)
     %p
       = post.created_at
     %hr.w-50
