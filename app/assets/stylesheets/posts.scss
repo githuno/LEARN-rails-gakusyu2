@@ -1,5 +1,6 @@
 .posts {
   display: flex;
+  position: relative;
   height: 20rem;
   overflow-x: auto;
   overflow-y: hidden; /* 縦スクロールバーを非表示にする */
@@ -23,9 +24,18 @@
   }
 }
 
-.card {
+.posts_card {
+  @extend .card !optional;
   flex-shrink: 0;
   width: 300px;
   height: auto;
-  margin-right: -10rem; /* カード同士の間隔を狭くする */
+  margin-left: -5rem;
+  margin-right: -5rem;
+}
+
+.end-of-data {
+  font-size: 2rem;
+  color: #aaa;
+  // 背景色を透明に指定
+  background-color: transparent;
 }

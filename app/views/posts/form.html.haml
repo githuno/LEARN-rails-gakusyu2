@@ -1,0 +1,25 @@
+-# haml-lint:disable IdNames
+%h1.text-center.font-weight-bold.mb-4.border-bottom
+  post
+
+.d-flex.flex-column.justify-content-center.align-items-center
+  = form_with(model: @post, local: true, class: 'mb-4') do |form|
+    .form-label
+      = form.label :content,
+        @post.new_record? ? '新規投稿' : '最終更新日: ' + @post.updated_at.to_s
+    .form-controll
+      = form.text_area :content, class: 'form-control', maxlength: 140,
+                                 style: 'width: 500px; height: 300px;'
+    .actions.mt-3.d-flex.justify-content-end.gap-5
+      - unless @post.new_record?
+        = link_to '削除', post_path(@post),
+          data: { turbo_method: :delete },
+          class: 'btn btn-danger ml-2'
+      = form.submit @post.new_record? ? '投稿' : '更新', class: 'btn btn-primary'
+
+%hr.w-25
+.d-flex.justify-content-between.mt-4.w-25
+  = link_to 'timeline', posts_path, class: 'btn btn-secondary'
+  - if user_signed_in?
+    = link_to 'ログアウト', destroy_user_session_path,
+              data: { turbo_method: :delete }, class: 'btn btn-danger'

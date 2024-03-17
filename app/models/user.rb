@@ -5,19 +5,21 @@ class User < ApplicationRecord
   # ポスト機能 ----------------------------------------------------------------
   # ユーザーは複数のPostを持ち、ユーザーが削除されたらpostも削除
   has_many :posts, dependent: :destroy
+
   # フォロー機能 ----------------------------------------------------------------
   # ユーザーは複数のフォローを持ち、ユーザーが削除されたらフォローも削除
   has_many :active_relationships, class_name: 'Relationship', foreign_key: 'follower_id', dependent: :destroy
   # ユーザーは複数のフォロワーを持ち、ユーザーが削除されたらフォロワーも削除
   has_many :passive_relationships, class_name: 'Relationship', foreign_key: 'followed_id', dependent: :destroy
   # ユーザーは複数のフォローを持ち、フォローしているユーザーを取得
-  has_many :following, through: :active_relationships, source: :followed
+  has_many :followings, through: :active_relationships, source: :followed
+  has_many :following_posts, through: :followings, source: :posts
   # ユーザーは複数のフォロワーを持ち、フォローされているユーザーを取得
   has_many :followers, through: :passive_relationships, source: :follower
 
   # ユーザーをフォローする
   def follow(other_user)
-    following << other_user unless self == other_user
+    followings << other_user unless self == other_user
   end
 
   # ユーザーをフォロー解除する
@@ -27,7 +29,7 @@ class User < ApplicationRecord
 
   # ユーザーがフォローしているかどうか
   def following?(other_user)
-    following.include?(other_user)
+    followings.include?(other_user)
   end
 
   # deviceの設定 ---------------------------------------------------------------
@@ -61,5 +63,4 @@ class User < ApplicationRecord
   def will_save_change_to_email?
     false
   end
-  # deviceの設定 ---------------------------------------------------------------
 end
