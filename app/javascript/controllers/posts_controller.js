@@ -64,7 +64,7 @@ export default class extends Controller {
       this.element.scrollLeft = scrollAmount;
     };
     // 20ミリ秒ごとにautoScroll関数を実行
-    this.autoScrollInterval = setInterval(autoScroll, 20);
+    this.autoScrollInterval = setInterval(this.autoScroll, 20);
   }
 
   // マウスが要素の上に乗ったときに自動スクロールを停止
