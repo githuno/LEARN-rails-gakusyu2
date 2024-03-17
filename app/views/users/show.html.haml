@@ -1,30 +1,40 @@
-%h1 ユーザー情報
-%p
-  %strong ユーザー名:
-  = @user.username
-- if current_user == @user
-  = link_to 'アカウントを編集', edit_user_registration_path, class: 'btn btn-primary'
+%h1.text-center.font-weight-bold.mb-4.border-bottom info
+
+.card.mb-3.w-50
+  - if current_user == @user
+    .card-header.d-flex.justify-content-between
+      %h5.card-title
+        = @user.username
+      = link_to 'アカウントを編集', edit_user_registration_path,
+                class: 'btn btn-primary'
+    = form_with(model: @user, local: true) do |form|
+      .card-body
+        %p.card-text.d-flex.flex-column.align-items-center
+          %strong プロフィール:
+          .form-group.text-center
+            = form.text_area :profile, class: 'form-control', maxlength: 200
+        %p.card-text.d-flex.flex-column.align-items-center
+          %strong ブログURL:
+          .form-group.text-center
+            = form.text_area :blog_url, class: 'form-control'
+        .d-flex.justify-content-end.mb-3
+          = form.submit '更新', class: 'btn btn-primary'
+
+  - else
+    .card-header.d-flex.justify-content-between
+      %h5.card-title
+        = @user.username
+    .card-body
+      %p.card-text.d-flex.flex-column.align-items-center
+        %strong プロフィール:
+        = @user.profile
+      %p.card-text.d-flex.flex-column.align-items-center
+        %strong ブログURL:
+        = link_to @user.blog_url, @user.blog_url
+
+%hr.w-25
+.d-flex.justify-content-between.mt-4.w-25
+  = link_to 'timeline', posts_path, class: 'btn btn-secondary'
   - if user_signed_in?
-    .d-flex.justify-content-center.mt-4
-      = link_to 'ログアウト', destroy_user_session_path,
-                data: { turbo_method: :delete }, class: 'btn btn-secondary'
-
-  = form_with(model: @user, local: true) do |form|
-    .form-group
-      = form.label :profile
-      = form.text_area :profile, class: 'form-control', maxlength: 200
-    .form-group
-      = form.label :blog_url
-      = form.text_field :blog_url, class: 'form-control'
-    .text-center
-      = form.submit '更新', class: 'btn btn-primary'
-- else
-  %p
-    %strong プロフィール:
-    = @user.profile
-  %p
-    %strong ブログURL:
-    = @user.blog_url
-
-.d-flex.justify-content-center.mt-4
-  = link_to '全体タイムライン', posts_path, class: 'btn btn-secondary'
+    = link_to 'ログアウト', destroy_user_session_path,
+              data: { turbo_method: :delete }, class: 'btn btn-danger'
