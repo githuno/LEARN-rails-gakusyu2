@@ -12,3 +12,7 @@ Style/FrozenStringLiteralComment:
 
 Style/Documentation:
   Enabled: false
+
+require: rubocop-rspec
+
+
