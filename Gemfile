@@ -61,6 +61,7 @@ group :development, :test do
   # ADDITIONAL GEMS
   gem 'factory_bot_rails'
   gem 'rspec-rails'
+  gem 'rubocop-rspec', require: false
 end
 
 group :development do
