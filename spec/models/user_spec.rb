@@ -37,4 +37,53 @@ RSpec.describe User do
       expect(user.errors[:username]).to include('only allows letters')
     end
   end
+
+  # ユーザーを削除したらポストも削除されること
+  describe 'アソシエーション' do
+    let(:user) { create(:user) }
+    let(:post) { create(:post, user:) }
+
+    it 'ユーザーを削除したらポストも削除されること' do
+      post
+      expect { user.destroy }.to change(Post, :count).by(-1)
+    end
+  end
+
+  # フォロー機能
+  describe 'フォロー機能' do
+    let(:user) { create(:user) }
+    let(:other_user) { create(:user, username: 'otheruser') }
+
+    it 'ユーザーをフォローすること' do
+      user.follow(other_user)
+      expect(user.following?(other_user)).to be_truthy
+    end
+
+    it 'ユーザーをフォロー解除すること' do
+      user.follow(other_user)
+      user.unfollow(other_user)
+      expect(user.following?(other_user)).to be_falsey
+    end
+  end
+
+  # deviceの設定
+  describe 'deviceの設定' do
+    it 'usernameを利用してログインすること' do
+      user = create(:user)
+      expect(User.find_for_database_authentication(username: user.username)).to eq user
+    end
+
+    it 'usernameが必須であること' do
+      user = build(:user, username: nil)
+      user.valid?
+      expect(user.errors[:username]).to include("can't be blank")
+    end
+
+    it 'usernameが一意であること' do
+      user = create(:user)
+      other_user = build(:user, username: user.username)
+      other_user.valid?
+      expect(other_user.errors[:username]).to include('has already been taken')
+    end
+  end
 end
