@@ -1,28 +1,36 @@
 class PostsController < ApplicationController
-  before_action :authenticate_user!, only: %i[new create edit update destroy]
+  before_action :authenticate_user!, only: %i[new create edit update destroy followings]
 
   def index
-    @posts = Post.all.order(created_at: :desc)
+    posts = Post.latest.includes(:user).limit(10)
+    @posts = decorate_with_user(posts)
     @post = Post.new
-    render :timeline # index.htmlをレンダリングしないように変更
+    render :timeline
   end
 
   def followings
-    @posts = current_user.following_posts.order(created_at: :desc)
+    posts = current_user.following_posts.latest.includes(:user).limit(10)
+    @posts = decorate_with_user(posts)
     @post = Post.new
     render :timeline
   end
 
   def user
     @user = User.find(params[:id])
-    @posts = @user.posts.order(created_at: :desc)
+    @posts = decorate_with_user(@user.posts.latest.includes(:user).limit(10))
     @post = Post.new
     render :timeline
   end
 
-  helper_method :current_action
-  def current_action
-    action_name
+  def more_posts
+    start = params[:start].to_i
+    type = params[:type]
+
+    posts = Post.get_posts(type, start, current_user)
+    @posts = decorate_with_user(posts)
+    respond_to do |format|
+      format.json { render json: @posts }
+    end
   end
 
   def new
@@ -34,10 +42,10 @@ class PostsController < ApplicationController
     @post = current_user.posts.build(post_params)
     puts "Post Params: #{post_params.inspect}" # パラメータの出力
     if @post.save
-      redirect_to posts_path, notice: 'Post was successfully created.'
+      redirect_back(fallback_location: root_path, notice: '投稿しました。')
     else
       puts "Post could not be saved. Errors: #{@post.errors.full_messages}" # 保存失敗とエラーメッセージのログ出力
-      redirect_to posts_path, alert: 'Post could not be created.'
+      redirect_back(fallback_location: root_path, alert: '投稿に失敗しました。')
     end
   end
 
@@ -49,21 +57,38 @@ class PostsController < ApplicationController
   def update
     @post = current_user.posts.find(params[:id])
     if @post.update(post_params)
-      redirect_to posts_path, notice: 'Post was successfully updated.'
+      redirect_back(fallback_location: root_path, notice: '更新しました。')
     else
-      render :edit
+      redirect_back(fallback_location: root_path, alert: '更新に失敗しました。')
     end
   end
 
   def destroy
     @post = current_user.posts.find(params[:id])
     @post.destroy
-    redirect_to posts_path, notice: 'Post was successfully destroyed.'
+    redirect_back(fallback_location: root_path, notice: '削除しました。')
+  end
+
+  helper_method :current_action
+  def current_action
+    action_name
   end
 
   private
 
   def post_params
     params.require(:post).permit(:content)
+  end
+
+  # ユーザー情報をpostにマージするメソッドを定義
+  def decorate_with_user(posts)
+    # ⚠️ html側でメソッド呼び出しができなくなりモデルメソッドを使えなくなる。post.idなどはpost['id']として取得する
+    posts.map do |post|
+      post.as_json.merge(
+        'following' => current_user&.following?(post.user),
+        'username' => post.user.username.to_s,
+        'user_id' => post.user.id
+      )
+    end
   end
 end

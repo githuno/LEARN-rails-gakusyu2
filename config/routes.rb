@@ -1,23 +1,20 @@
 Rails.application.routes.draw do
   root 'posts#index'
 
-  get 'users/show'
   devise_for :users
   resources :users, only: %i[show update]
+  get 'users/:id/show_json', to: 'users#show_json', as: 'user_show_json'
   resources :users do
     member do
-      post :follow
-      delete :unfollow
+      post :toggle_follow
     end
   end
 
-  resources :posts, only: %i[index new create edit update destroy]
-
-  # rootへ
+  resources :posts, only: %i[create update destroy]
   get 'timeline', to: 'posts#index'
   get 'timeline/followings', to: 'posts#followings'
   get 'timeline/user/:id', to: 'posts#user', as: 'timeline_user'
-
+  get 'posts/more', to: 'posts#more_posts', as: 'more_posts'
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

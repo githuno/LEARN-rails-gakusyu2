@@ -4,6 +4,7 @@
   height: 20rem;
   overflow-x: auto;
   overflow-y: hidden; /* 縦スクロールバーを非表示にする */
+  padding-bottom: 10px;
 
   /* スクロールバーのスタイルをカスタマイズ */
   &::-webkit-scrollbar {
@@ -35,7 +36,18 @@
 
 .end-of-data {
   font-size: 2rem;
+  height: 4rem;
+  margin-top: 100px;
   color: #aaa;
   // 背景色を透明に指定
   background-color: transparent;
+}
+
+.modal-dialog {
+  margin-top: 30%;
+}
+
+.modal-content {
+  // 少し透明にする
+  background-color: rgba(255, 255, 255, 0.8);
 }
