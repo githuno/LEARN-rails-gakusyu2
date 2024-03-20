@@ -9,4 +9,12 @@
     = stylesheet_link_tag 'application', 'data-turbo-track': 'reload'
     = javascript_importmap_tags
   %body.d-flex.flex-column.justify-content-center.align-items-center
+    / ----------ここからトースト----------
+    .toast-container.position-fixed.bottom-0.end-0.p-3
+      - flash.each do |key, value|
+        - toast_class = (key == 'notice') ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'
+        .toast{ 'data-controller' => 'toast', class: "border-0 #{ toast_class }" } 
+          .toast-body
+            = content_tag(:div, value)
+    / ----------ここまでトースト----------
     = yield

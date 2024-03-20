@@ -33,8 +33,9 @@
         = link_to @user.blog_url, @user.blog_url
 
 %hr.w-25
-.d-flex.justify-content-between.mt-4.w-25
-  = link_to 'timeline', posts_path, class: 'btn btn-secondary'
+.d-flex.justify-content-between.mt-4.w-25{ style: 'min-width: 185px;' }
   - if user_signed_in?
     = link_to 'ログアウト', destroy_user_session_path,
-              data: { turbo_method: :delete }, class: 'btn btn-danger'
+              data: { turbo_method: :delete },
+              class: 'btn btn-outline-secondary'
+  = link_to 'timeline', timeline_path, class: 'btn btn-secondary'
