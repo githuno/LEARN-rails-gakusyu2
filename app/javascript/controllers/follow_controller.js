@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus";
 
-export default class extends Controller {
+class FollowController extends Controller {
   connect() {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
@@ -60,3 +60,5 @@ export default class extends Controller {
     }
   }
 }
+
+export default FollowController;
