@@ -11,6 +11,9 @@ gem 'faker'
 gem 'haml-rails'
 gem 'html2haml'
 gem 'jquery-rails'
+gem 'net-imap'
+gem 'net-pop'
+gem 'net-smtp'
 gem 'sassc-rails'
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
