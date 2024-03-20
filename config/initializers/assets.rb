@@ -5,7 +5,7 @@ Rails.application.config.assets.version = '1.0'
 
 # ADDITIONAL ASSETS
 Rails.application.config.assets.precompile += %w[bootstrap.min.js popper.js]
-
+Rails.application.config.assets.precompile += %w[follow_controller.js modal_controller.js]
 # Add additional assets to the asset load path.
 # Rails.application.config.assets.paths << Emoji.images_path
 
