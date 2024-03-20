@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 ruby '3.2.3'
 
 # ADDITIONAL GEMS
+gem 'activerecord-cockroachdb-adapter', '~> 7.0.0'
 gem 'bootstrap', '~> 5.3.2'
 gem 'devise'
 gem 'dotenv-rails'
