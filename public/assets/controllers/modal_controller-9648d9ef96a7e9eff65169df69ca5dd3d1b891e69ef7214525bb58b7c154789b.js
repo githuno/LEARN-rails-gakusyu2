@@ -1,7 +1,8 @@
 import { Controller } from "@hotwired/stimulus";
 import FollowController from "./follow_controller";
 
-class ModalController extends Controller {
+class ModalController 
+extends Controller {
   edit(event) {
     console.log("edit");
     const modalType = event.target.dataset.modalType;

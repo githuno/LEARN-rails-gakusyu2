@@ -23,6 +23,14 @@ module Gakusyu1
     #
     # config.time_zone = "Central Time (US & Canada)"
     # config.eager_load_paths << Rails.root.join("extras")
+
+    # Add CORS configuration
+    config.middleware.insert_before 0, Rack::Cors do
+      allow do
+        origins 'posca-c2a783fd1558.herokuapp.com'
+        resource '*', headers: :any, methods: %i[get post put patch delete options head]
+      end
+    end
     config.generators do |g|
       g.assets false
       g.helper false

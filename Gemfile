@@ -14,6 +14,7 @@ gem 'jquery-rails'
 gem 'net-imap'
 gem 'net-pop'
 gem 'net-smtp'
+gem 'rack-cors'
 gem 'sassc-rails'
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
