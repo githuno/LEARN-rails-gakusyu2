@@ -2,15 +2,23 @@ import { Controller } from "@hotwired/stimulus";
 
 class ScrollController extends Controller {
   autoScrollInterval = null;
-  postsWidth =
-    document.querySelector(".posts").offsetWidth -
-    (document.querySelector(".posts").offsetWidth -
-      document.querySelector(".posts").clientWidth);
+  // postsWidth =
+  //   document.querySelector(".posts").offsetWidth -
+  //   (document.querySelector(".posts").offsetWidth -
+  //     document.querySelector(".posts").clientWidth);
+  posts = null;
+  postsWidth = null;
+  cards = null;
 
   connect() {
     console.log("Connected to HorizontalController");
-    window.addEventListener("resize", this.handleResize.bind(this));
-    const cards = this.element.querySelectorAll(".posts_card");
+    // window.addEventListener("resize", this.handleResize.bind(this));
+    // const cards = this.element.querySelectorAll(".posts_card");
+    this.posts = document.querySelector(".posts");
+    this.postsWidth = this.getPostsWidth();
+    this.cards = this.element.querySelectorAll(".posts_card");
+
+
 
     // カード1枚だけの場合
     if (cards.length === 1) {
@@ -28,11 +36,12 @@ class ScrollController extends Controller {
     }
 
     // 各種イベントリスナーを追加
-    this.element.addEventListener("wheel", this.handleWheel.bind(this));
-    this.element.addEventListener("scroll", this.handleScroll.bind(this));
+    window.addEventListener("resize", this.debounce(this.handleResize.bind(this), 250));
+    this.element.addEventListener("wheel", this.debounce(this.handleWheel.bind(this), 250));
+    this.element.addEventListener("scroll", this.debounce(this.handleScroll.bind(this), 250));
     this.element.addEventListener("mouseover", this.handleMouseOver.bind(this));
     this.element.addEventListener("mouseout", this.handleMouseOut.bind(this));
-    cards.forEach((card) => {
+    this.cards.forEach((card) => {
       card.addEventListener("click", this.handleClick.bind(this));
       card.addEventListener("focus", this.handleFocus.bind(this));
     });
@@ -151,6 +160,22 @@ class ScrollController extends Controller {
       (document.querySelector(".posts").offsetWidth -
         document.querySelector(".posts").clientWidth);
     this.handleScroll(); // postsWidthが更新された後にhandleScrollを呼び出す
+  }
+
+  getPostsWidth() {
+    return this.posts.offsetWidth - (this.posts.offsetWidth - this.posts.clientWidth);
+  }
+
+  debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
   }
 }
 // -----------------------------------------------------------------------------
