@@ -11,11 +11,10 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[7.0].define(version: 2024_03_16_054508) do
-  # Custom types defined in this database.
-  # Note that some types may not work with other database engines. Be careful if changing database.
-  create_enum "crdb_internal_region", ["aws-ap-south-1", "aws-ap-southeast-1"]
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
 
-  create_table "posts", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
+  create_table "posts", force: :cascade do |t|
     t.text "content"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -23,9 +22,9 @@ ActiveRecord::Schema[7.0].define(version: 2024_03_16_054508) do
     t.index ["user_id"], name: "index_posts_on_user_id"
   end
 
-  create_table "relationships", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
-    t.bigint "follower_id", null: false
-    t.bigint "followed_id", null: false
+  create_table "relationships", force: :cascade do |t|
+    t.integer "follower_id", null: false
+    t.integer "followed_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["followed_id"], name: "index_relationships_on_followed_id"
@@ -33,7 +32,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_03_16_054508) do
     t.index ["follower_id"], name: "index_relationships_on_follower_id"
   end
 
-  create_table "users", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
+  create_table "users", force: :cascade do |t|
     t.string "username", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "profile", limit: 200

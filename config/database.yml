@@ -24,7 +24,7 @@ default: &default
 
 development:
   <<: *default
-  database: gakusyu1_development
+  database: sonic_development
 # development:
 #   adapter: cockroachdb
 #   url: <%= ENV['DATABASE_URL'] %>
@@ -85,4 +85,4 @@ test:
 #
 production:
   adapter: cockroachdb
-  url: <%= ENV['DATABASE_URL'] %>
+  url: <%= ENV['COCKROACHDB_URL'] %>
