@@ -2,12 +2,19 @@
 %html
   %head
     %meta{:content => 'text/html; charset=UTF-8', 'http-equiv' => 'Content-Type'}/
-    %title Gakusyu1
+    - if Rails.env.production?
+      %title posca
+    - else
+      %title Gakusyu1
     %meta{content: 'width=device-width,initial-scale=1', name: 'viewport'}/
     = csrf_meta_tags
     = csp_meta_tag
     = stylesheet_link_tag 'application', 'data-turbo-track': 'reload'
     = javascript_importmap_tags
+    = favicon_link_tag 'favicon.ico'
+  .header.bg-light
+    .position-fixed.top-0.start-0.m-3
+      = image_tag 'logo.svg', alt: 'logo', width: '50'
   %body.d-flex.flex-column.justify-content-center.align-items-center
     / ----------ここからトースト----------
     .toast-container.position-fixed.bottom-0.end-0.p-3
@@ -18,3 +25,4 @@
             = content_tag(:div, value)
     / ----------ここまでトースト----------
     = yield
+
