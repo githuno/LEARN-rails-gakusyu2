@@ -27,7 +27,10 @@
       .posts_card.mr-2.mb-2{ tabindex: 0 }
         .card-body.d-flex.flex-column.justify-content-between
           .top-content
-            %p.h5.card-title
+            %p.h5.card-title{
+              'data-bs-toggle': 'modal',
+              'data-bs-target': '#postModal'
+            }
               = post['content']
             %p.card-text
               = post['updated_at'].in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M')
@@ -82,7 +85,18 @@
       'data-bs-toggle': 'modal',
       'data-bs-target': '#newModal'
     } 新規投稿
--# 投稿モーダル -----------------------------------------------------------------
+
+-# 投稿詳細モーダル -----------------------------------------------------------------
+.modal.fade{ id: 'postModal', tabindex: '-1', 'aria-hidden': 'true' }
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %h1.modal-title.fs-5{ id: 'postDetailModalLabel' } 投稿詳細
+        %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }
+      .modal-body
+        %p.h5.card-title{ id: 'postDetailContent' }
+        %p.card-text{ id: 'postDetailUpdatedAt' }
+-# 新規投稿モーダル -----------------------------------------------------------------
 .modal.fade{ id: 'newModal', tabindex: '-1', 'aria-hidden': 'true' }
   .modal-dialog
     .modal-content
@@ -95,7 +109,7 @@
           .actions.mt-3.d-flex.justify-content-end.gap-5
             = form.submit '投稿', class: 'btn btn-primary'
 
--# 編集モーダル -----------------------------------------------------------------
+-# 投稿編集モーダル -----------------------------------------------------------------
 .modal.fade{ id: 'editModal', tabindex: '-1', 'aria-hidden': 'true' }
   .modal-dialog
     .modal-content

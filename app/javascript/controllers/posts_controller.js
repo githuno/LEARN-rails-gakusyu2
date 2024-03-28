@@ -265,24 +265,26 @@ class LoadController extends ScrollController {
   async loadMorePosts() {
     if (this.isLoading) return; // 新しいポストを取得している間は関数の実行をスキップ
     if (this.scrollChecker()) {
-      console.log("run loadMorePosts()");
       this.isLoading = true; // 新しいポストを取得開始
 
       const totalCards = this.element.querySelectorAll(".posts_card").length;
       const hiddenCards =
         this.element.querySelectorAll(".posts_card.hidden").length;
       const start = totalCards - hiddenCards - 1;
-      try {
-        const response = await fetch(
-          `/posts/more?start=${start}&type=${this.tlType}`
-        );
-        const data = await response.json();
-        this.insertNewPosts(data);
 
-        this.isLoading = false; // 新しいポストを取得完了
-      } catch (error) {
-        console.error("Error:", error);
-      }
+      console.log("run loadMorePosts()");
+      // 一旦停止
+      // try {
+      //   const response = await fetch(
+      //     `/posts/more?start=${start}&type=${this.tlType}`
+      //   );
+      //   const data = await response.json();
+      //   this.insertNewPosts(data);
+
+      //   this.isLoading = false; // 新しいポストを取得完了
+      // } catch (error) {
+      //   console.error("Error:", error);
+      // }
     }
   }
 }
