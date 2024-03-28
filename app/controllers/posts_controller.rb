@@ -3,21 +3,21 @@ class PostsController < ApplicationController
 
   def index
     posts = Post.latest.includes(:user, :likes).limit(10)
-    @posts = decorate_with_user(posts)
+    @posts = decorate(posts)
     @post = Post.new
     render :timeline
   end
 
   def followings
     posts = current_user.following_posts.latest.includes(:user, :likes).limit(10)
-    @posts = decorate_with_user(posts)
+    @posts = decorate(posts)
     @post = Post.new
     render :timeline
   end
 
   def user
     @user = User.find(params[:id])
-    @posts = decorate_with_user(@user.posts.latest.includes(:user, :likes).limit(10))
+    @posts = decorate(@user.posts.latest.includes(:user, :likes).limit(10))
     @post = Post.new
     render :timeline
   end
@@ -27,7 +27,7 @@ class PostsController < ApplicationController
     type = params[:type]
 
     posts = Post.get_posts(type, start, current_user)
-    @posts = decorate_with_user(posts)
+    @posts = decorate(posts)
     respond_to do |format|
       format.json { render json: @posts }
     end
@@ -92,19 +92,29 @@ class PostsController < ApplicationController
     params.require(:post).permit(:content)
   end
 
-  # ユーザー情報をpostにマージするメソッドを定義
-  def decorate_with_user(posts)
-    # ⚠️ html側でメソッド呼び出しができなくなりモデルメソッドを使えなくなる。post.idなどはpost['id']として取得する
-    user_ids = posts.map(&:user_id)
-    users = User.where(id: user_ids).index_by(&:id)
-
+  def decorate(posts)
+    users = get_users(posts)
     posts.map do |post|
-      user = users[post.user_id]
-      post.as_json.merge(
-        'following' => current_user&.following?(user),
-        'username' => user.username.to_s,
-        'user_id' => user.id
-      )
+      merge_info(post, users)
     end
+  end
+
+  def get_users(posts)
+    user_ids = posts.map(&:user_id)
+    User.where(id: user_ids).index_by(&:id)
+  end
+
+  # フロントで必要な情報をマージ
+  def merge_info(post, users)
+    user = users[post.user_id]
+    # ⚠️ html側でメソッド呼び出しができなくなりモデルメソッドを使えなくなる。
+    # これによりビューファイルでは、post.idなどをpost['id']として取得する必要がある。
+    post.as_json.merge(
+      'following' => current_user&.following?(user),
+      'username' => user.username.to_s,
+      'user_id' => user.id,
+      'likes_count' => post.likes_count,
+      'liked' => post.liked_by?(current_user)
+    )
   end
 end

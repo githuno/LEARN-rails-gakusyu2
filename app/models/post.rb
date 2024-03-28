@@ -17,7 +17,7 @@ class Post < ApplicationRecord
   end
 
   # いいね機能 ------------------------------------------------------------------
-  has_many :likes, dependent: :destroy
+  has_many :likes, dependent: :destroy # 投稿は複数のいいねを持ち、投稿が削除されたらいいねも削除
   has_many :likers, through: :likes, source: :user
 
   def like_by(user)
@@ -30,5 +30,9 @@ class Post < ApplicationRecord
 
   def liked_by?(user)
     likers.include?(user)
+  end
+
+  def likes_count
+    likes.count
   end
 end

@@ -68,13 +68,14 @@
                     'data-action': 'click->like#toggleLike'
                   }
                     いいね
-                    
                   -# %button.btn.mb-4.toggleFollow{
                   -#   'data-controller': 'follow',
                   -#   'data-user-id': post['user_id'],
                   -#   'data-is-followed': post['following'].to_s,
                   -#   'data-action': 'click->follow#toggleFollow'
                   -# }
+              %p.like-count
+                = post['likes_count']
     .end-of-data.posts_card.border-0
       .card-body.d-flex.flex-row.justify-content-center
         %h5.card-title No more data
