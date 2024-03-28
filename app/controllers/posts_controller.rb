@@ -95,11 +95,15 @@ class PostsController < ApplicationController
   # ユーザー情報をpostにマージするメソッドを定義
   def decorate_with_user(posts)
     # ⚠️ html側でメソッド呼び出しができなくなりモデルメソッドを使えなくなる。post.idなどはpost['id']として取得する
+    user_ids = posts.map(&:user_id)
+    users = User.where(id: user_ids).index_by(&:id)
+
     posts.map do |post|
+      user = users[post.user_id]
       post.as_json.merge(
-        'following' => current_user&.following?(post.user),
-        'username' => post.user.username.to_s,
-        'user_id' => post.user.id
+        'following' => current_user&.following?(user),
+        'username' => user.username.to_s,
+        'user_id' => user.id
       )
     end
   end
