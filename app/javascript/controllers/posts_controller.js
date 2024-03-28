@@ -186,13 +186,21 @@ class LoadController extends ScrollController {
 
   insertNewPosts(data) {
     data.forEach((post) => {
+      const date = new Date(post.updated_at);
+      const formattedDate = date.toLocaleString("ja-JP", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
       const newCard = document.createElement("div");
       newCard.classList.add("posts_card");
       newCard.innerHTML = `
         <div class="card-body d-flex flex-column justify-content-between">
           <div class="top-content">
             <p class="h5 card-title">${post.content}</p>
-            <p class="card-text">${post.updated_at}</p>
+            <p class="card-text">${formattedDate}</p>
           </div>
           <div class="bottom-content">
             <hr>

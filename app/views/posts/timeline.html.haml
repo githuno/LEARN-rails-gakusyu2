@@ -30,7 +30,7 @@
             %p.h5.card-title
               = post['content']
             %p.card-text
-              = post['updated_at']
+              = post['updated_at'].in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M')
           .bottom-content
             %hr
             .d-flex.justify-content-between
@@ -55,7 +55,7 @@
                     'data-bs-target': '#editModal',
                     'data-post-id': post['id'],
                     'data-post-content': post['content'],
-                    'data-post-updated-at': post['updated_at'],
+                    'data-post-updated-at': post['updated_at'].in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M'),
                     'data-action': 'click->modal#edit'
                   } 編集
                 - else
