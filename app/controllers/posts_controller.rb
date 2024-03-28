@@ -2,14 +2,14 @@ class PostsController < ApplicationController
   before_action :authenticate_user!, only: %i[new create edit update destroy followings]
 
   def index
-    posts = Post.latest.includes(:user).limit(10)
+    posts = Post.latest.includes(:user, :likes).limit(10)
     @posts = decorate_with_user(posts)
     @post = Post.new
     render :timeline
   end
 
   def followings
-    posts = current_user.following_posts.latest.includes(:user).limit(10)
+    posts = current_user.following_posts.latest.includes(:user, :likes).limit(10)
     @posts = decorate_with_user(posts)
     @post = Post.new
     render :timeline
@@ -17,7 +17,7 @@ class PostsController < ApplicationController
 
   def user
     @user = User.find(params[:id])
-    @posts = decorate_with_user(@user.posts.latest.includes(:user).limit(10))
+    @posts = decorate_with_user(@user.posts.latest.includes(:user, :likes).limit(10))
     @post = Post.new
     render :timeline
   end
@@ -67,6 +67,18 @@ class PostsController < ApplicationController
     @post = current_user.posts.find(params[:id])
     @post.destroy
     redirect_back(fallback_location: root_path, notice: '削除しました。')
+  end
+
+  # いいね機能 ------------------------------------------------------------------
+  def toggle_like
+    post = Post.find(params[:id])
+    if current_user.liked_posts.include?(post)
+      post.unlike_by(current_user)
+      render json: { status: 'unliked' }
+    else
+      post.like_by(current_user)
+      render json: { status: 'liked' }
+    end
   end
 
   helper_method :current_action

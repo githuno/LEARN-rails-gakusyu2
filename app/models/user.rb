@@ -33,6 +33,12 @@ class User < ApplicationRecord
     followings.include?(other_user)
   end
 
+  # いいね機能 ------------------------------------------------------------------
+  # ユーザーは複数のいいねを持ち、ユーザーが削除されたらいいねも削除
+  has_many :likes, dependent: :destroy
+  # ユーザーは複数のいいねを持ち、いいねした投稿を取得
+  has_many :liked_posts, through: :likes, source: :post
+
   # deviceの設定 ---------------------------------------------------------------
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable

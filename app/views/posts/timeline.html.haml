@@ -62,12 +62,19 @@
                     'data-action': 'click->modal#edit'
                   } 編集
                 - else
-                  %button.btn.mb-4.toggleFollow{
-                    'data-controller': 'follow',
-                    'data-user-id': post['user_id'],
-                    'data-is-followed': post['following'].to_s,
-                    'data-action': 'click->follow#toggleFollow'
+                  %button.btn.mb-4.likeIcon{
+                    'data-controller': 'like',
+                    'data-post-id': post['id'],
+                    'data-action': 'click->like#toggleLike'
                   }
+                    いいね
+                    
+                  -# %button.btn.mb-4.toggleFollow{
+                  -#   'data-controller': 'follow',
+                  -#   'data-user-id': post['user_id'],
+                  -#   'data-is-followed': post['following'].to_s,
+                  -#   'data-action': 'click->follow#toggleFollow'
+                  -# }
     .end-of-data.posts_card.border-0
       .card-body.d-flex.flex-row.justify-content-center
         %h5.card-title No more data
@@ -152,11 +159,3 @@
                 'data-controller': 'modal',
                 'data-action': 'click->modal#toggleFollow'
               }
-
--# -----------------------------------------------------------------------------
--# -# POSTモーダル
--# .modal.fade#postModal{ tabindex: '-1', aria_hidden: 'true' }
--#   .modal-dialog
--#     .modal-content
--#       .modal-body
--#         = render 'form'

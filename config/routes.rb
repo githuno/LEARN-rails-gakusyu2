@@ -15,6 +15,11 @@ Rails.application.routes.draw do
   get 'timeline/followings', to: 'posts#followings'
   get 'timeline/user/:id', to: 'posts#user', as: 'timeline_user'
   get 'posts/more', to: 'posts#more_posts', as: 'more_posts'
+  resources :posts do
+    member do
+      post :toggle_like
+    end
+  end
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
