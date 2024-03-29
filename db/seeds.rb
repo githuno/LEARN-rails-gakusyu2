@@ -16,4 +16,14 @@ User.all.each do |user|
       content: Faker::Lorem.sentence(word_count: 10)
     )
   end
+
+  # ランダムにいいねをする
+  Post.all.sample(3).each do |post|
+    post.likes.create!(user_id: user.id)
+  end
+
+  # ランダムにフォローする
+  User.all.sample(3).each do |followed_user|
+    user.follow(followed_user)
+  end
 end
