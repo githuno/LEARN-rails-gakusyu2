@@ -174,11 +174,13 @@
           .row.gap-4
             .col-8
             .col-2
-              -# 自分のページではない場合
-              %button.btn.toggleFollow{
-                'data-controller': 'modal',
-                'data-action': 'click->modal#toggleFollow'
-              }
+              - if user_signed_in?
+                -# 自分のページの場合
+                -# 自分のページではない場合
+                %button.btn.toggleFollow{
+                  'data-controller': 'modal',
+                  'data-action': 'click->modal#toggleFollow'
+                }
 -# Likersモーダル -----------------------------------------------------
 .modal.fade{ id: 'likersModal', tabindex: '-1', 'aria-hidden': 'true' }
   .modal-dialog
