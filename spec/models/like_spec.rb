@@ -5,17 +5,26 @@ RSpec.describe Like do
   let(:post) { create(:post) }
   let(:like) { create(:like, user:, post:) }
 
-  #   いいねされたら投稿のいいね数が増える
-  it 'いいねされたら投稿のいいね数が増える' do
+  it 'likeされたら投稿のlike数が増える' do
     expect { create(:like, user:, post:) }.to change(post, :likes_count).by(1)
   end
 
-  #   いいね済みの投稿にいいねしたらいいねを取り消す
-  it 'いいね済みの投稿にいいねしたらいいねを取り消す' do
-    like = create(:like, user:, post:)
+  it 'like済みの投稿にlikeしたらlikeを取り消す' do
+    like
     expect { like.destroy }.to change(post, :likes_count).by(-1)
   end
 
-  #   いいねしたユーザーを取得できる
-  #   いいねした投稿を取得できる
+  it '自分の投稿にはlikeおよびunlikeはできない' do
+    expect { create(:like, user: post.user, post:) }.to raise_error(ActiveRecord::RecordInvalid)
+  end
+
+  it '自分の投稿にlikeしたユーザー一覧を取得できる' do
+    like
+    expect(post.likers).to include(user)
+  end
+
+  it 'likeした投稿一覧を取得できる' do
+    like
+    expect(user.liked_posts).to include(post)
+  end
 end
