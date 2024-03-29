@@ -1,8 +1,7 @@
 import { Controller } from "@hotwired/stimulus";
 import FollowController from "./follow_controller";
 
-class ModalController 
-extends Controller {
+class ModalController extends Controller {
   edit(event) {
     console.log("edit");
     const modalType = event.target.dataset.modalType;
@@ -32,9 +31,13 @@ extends Controller {
   }
 
   showUser(event) {
-    console.log("showUser");
-    const userId = event.target.dataset.userId;
+    const userModal = document.getElementById("userModal");
+    userModal.dataset.postId = event.target.dataset.postId;
 
+    const userId = event.target.dataset.userId;
+    // userModal.dataset.userId = userId;
+
+    // ユーザー情報を取得
     fetch(`/users/${userId}/show_json`)
       .then((response) => response.json())
       .then((user) => {
@@ -61,6 +64,10 @@ extends Controller {
         followButton.dataset.userId = user.id;
         followButton.dataset.isFollowed = user.is_followed;
       });
+
+    // followControllerをconnectする
+    const followController = new FollowController();
+    followController.connect();
   }
 
   toggleFollow(event) {
@@ -68,5 +75,17 @@ extends Controller {
     followController.toggleFollow(event);
   }
 }
+
+// likersモーダル→ userモーダル→ likersモーダル
+document
+  .getElementById("userModal")
+  .addEventListener("hidden.bs.modal", function (event) {
+    const postId = event.target.dataset.postId;
+    // console.log("閉じた", postId);
+    if (postId !== 'none'){
+      const likersModal = new bootstrap.Modal(document.getElementById("likersModal"));
+      likersModal.show();
+    }
+  });
 
 export default ModalController;

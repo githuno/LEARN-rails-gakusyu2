@@ -5,14 +5,12 @@ class Post < ApplicationRecord
   scope :latest, -> { order(created_at: :desc) }
 
   def self.get_posts(type, start, user)
-    posts = case type
-            when 'followings'
-              user ? user.following_posts : all
-            when 'user'
-              user ? user.posts : all
-            else
-              all
-            end
+    post_types = {
+      'followings' => user&.following_posts,
+      'likes' => user&.liked_posts,
+      'user' => user&.posts
+    }
+    posts = post_types[type] || all
     posts.latest.offset(start).limit(5)
   end
 
@@ -33,6 +31,6 @@ class Post < ApplicationRecord
   end
 
   def likes_count
-    likes.count
+    self[:likes_count]
   end
 end
