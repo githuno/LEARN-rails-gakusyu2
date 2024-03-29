@@ -36,9 +36,9 @@
               = post['updated_at'].in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M')
           .bottom-content
             %hr
-            .d-flex.justify-content-between
-              -# 左ボタン-----------------------------------
-              %p.card-text
+            .row
+              -# ユーザー名
+              .col-9
                 - if current_user&.id != post['user_id'] # あとで修正
                   %button.btn.btn-outline-secondary{
                     'data-bs-toggle': 'modal',
@@ -48,34 +48,43 @@
                     'data-user-id': post['user_id'],
                     'data-action': 'click->modal#showUser'
                   }= post['username']
-              -# 右ボタン-----------------------------------
-              - if user_signed_in?
-                - if current_user.id == post['user_id']
-                  %button.btn.mb-4.btn-secondary{
-                    'data-bs-toggle': 'modal',
-                    'data-controller': 'modal',
-                    'data-modal-type': 'post',
-                    'data-bs-target': '#editModal',
-                    'data-post-id': post['id'],
-                    'data-post-content': post['content'],
-                    'data-post-updated-at': post['updated_at'].in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M'),
-                    'data-action': 'click->modal#edit'
-                  } 編集
+              -# いいね
+              .col-1
+                - if user_signed_in?
+                  - if current_user.id == post['user_id']
+                    .bi.bi-pencil-square{
+                      'data-bs-toggle': 'modal',
+                      'data-controller': 'modal',
+                      'data-modal-type': 'post',
+                      'data-bs-target': '#editModal',
+                      'data-post-id': post['id'],
+                      'data-post-content': post['content'],
+                      'data-post-updated-at': post['updated_at'].in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M'),
+                      'data-action': 'click->modal#edit'
+                    }
+                  - else
+                    .i{
+                      'data-controller': 'like',
+                      'data-post-liked': post['liked'],
+                      'data-post-id': post['id'],
+                      'data-action': 'click->like#toggleLike'
+                    }
+                      - if post['liked']
+                        %heart.bi.bi-heart-fill{style: "color: #A54824;"}
+                      - else
+                        %heart.bi.bi-heart{style: "color: #A54824;"}
                 - else
-                  %button.btn.mb-4.likeIcon{
-                    'data-controller': 'like',
-                    'data-post-id': post['id'],
-                    'data-action': 'click->like#toggleLike'
-                  }
-                    いいね
-                  -# %button.btn.mb-4.toggleFollow{
-                  -#   'data-controller': 'follow',
-                  -#   'data-user-id': post['user_id'],
-                  -#   'data-is-followed': post['following'].to_s,
-                  -#   'data-action': 'click->follow#toggleFollow'
-                  -# }
-              %p.like-count
+                  .bi.bi-heart
+              -# いいね数
+              .col-2{id: "likes-count-#{post['id']}"}
                 = post['likes_count']
+              -# %button.btn.mb-4.toggleFollow{
+              -#   'data-controller': 'follow',
+              -#   'data-user-id': post['user_id'],
+              -#   'data-is-followed': post['following'].to_s,
+              -#   'data-action': 'click->follow#toggleFollow'
+              -# }
+              
     .end-of-data.posts_card.border-0
       .card-body.d-flex.flex-row.justify-content-center
         %h5.card-title No more data

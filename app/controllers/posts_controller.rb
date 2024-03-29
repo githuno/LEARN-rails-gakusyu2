@@ -74,10 +74,10 @@ class PostsController < ApplicationController
     post = Post.find(params[:id])
     if current_user.liked_posts.include?(post)
       post.unlike_by(current_user)
-      render json: { status: 'unliked' }
+      render json: { status: 'unliked', count: post.likes_count }
     else
       post.like_by(current_user)
-      render json: { status: 'liked' }
+      render json: { status: 'liked', count: post.likes_count }
     end
   end
 
