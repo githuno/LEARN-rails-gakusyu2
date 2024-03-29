@@ -64,6 +64,7 @@ group :development, :test do
   gem 'debug', platforms: %i[mri windows]
 
   # ADDITIONAL GEMS
+  gem 'bullet'
   gem 'factory_bot_rails'
   gem 'rspec-rails'
   gem 'rubocop-rspec', require: false
