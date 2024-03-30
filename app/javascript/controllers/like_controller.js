@@ -37,34 +37,7 @@ class LikeController extends Controller {
     }
   }
 
-  showLikers(event) {
-    const postId = event.currentTarget.dataset.postId;
 
-    // いいねしたユーザーの一覧を取得
-    fetch(`/posts/${postId}/likers`)
-      .then(response => response.json())
-      .then(users => {
-        const usersList = document.getElementById('likersList');
-        usersList.innerHTML = '';
-
-        // ユーザーの一覧をモーダルに表示
-        users.forEach(user => {
-          var li = document.createElement('li');
-          var a = document.createElement('a');
-          a.textContent = user.username;
-          a.dataset.bsToggle = 'modal';
-          a.dataset.controller = 'modal';
-          a.dataset.modalType = 'user';
-          a.dataset.bsTarget = '#userModal';
-          a.dataset.userId = user.id;
-          a.dataset.postId = postId;
-          a.dataset.action = 'click->modal#showUser';
-          a.style.textDecoration = 'underline'; // 下線を追加
-          li.appendChild(a);
-          usersList.appendChild(li);
-        });
-      });
-  }
 }
 
 export default LikeController;

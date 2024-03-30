@@ -46,23 +46,22 @@
                   .bi.bi-pencil-square{
                     'data-bs-toggle': 'modal',
                     'data-controller': 'modal',
-                    'data-modal-type': 'post',
                     'data-bs-target': '#editModal',
+                    'data-action': 'click->modal#editPost',
                     'data-post-id': post['id'],
                     'data-post-content': post['content'],
                     'data-post-updated-at': post['updated_at'].in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M'),
-                    'data-action': 'click->modal#edit'
                   }
                 - else
                   %button.btn.btn-outline-secondary{
                     'data-bs-toggle': 'modal',
                     'data-controller': 'modal',
-                    'data-modal-type': 'user',
                     'data-bs-target': '#userModal',
+                    'data-action': 'click->modal#showUser',
                     'data-user-id': post['user_id'],
+                    'data-my-id': current_user&.id,
                     'data-is-followed': post['following'].to_s,
                     'data-post-id': 'none',
-                    'data-action': 'click->modal#showUser'
                   }= post['username']
               .col-1
               -# いいね
@@ -84,9 +83,10 @@
               .col-2{id: "likes-count-#{post['id']}", 
                       'data-bs-toggle': 'modal',
                       'data-bs-target': '#likersModal',
+                      'data-controller': 'modal',
+                      'data-action': 'click->modal#showLikers',
                       'data-post-id': post['id'],
-                      'data-controller': 'like',
-                      'data-action': 'click->like#showLikers'
+                      'data-my-id': current_user&.id,
                     }
                 = post['likes_count']
               -# %button.btn.mb-4.toggleFollow{
@@ -162,24 +162,22 @@
       .modal-body
         .container-fluid
           .row.gap-4.user-profile
-            .col-2
+            .col-3
               %strong プロフィール :
-            .col-8
+            .col
               %span.profile-content
           .row.gap-4.user-blog-url
-            .col-2
+            .col-3
               %strong ブログURL :
-            .col-8
+            .col
               = link_to 'user-blog-url-link', '#', class: 'user-blog-url-link'
           .row.gap-4
             .col-8
-            .col-2
+            .col
               - if user_signed_in?
-                -# 自分のページの場合
-                -# 自分のページではない場合
                 %button.btn.toggleFollow{
-                  'data-controller': 'modal',
-                  'data-action': 'click->modal#toggleFollow'
+                  'data-controller': 'follow',
+                  'data-action': 'click->follow#toggleFollow',
                 }
 -# Likersモーダル -----------------------------------------------------
 .modal.fade{ id: 'likersModal', tabindex: '-1', 'aria-hidden': 'true' }
