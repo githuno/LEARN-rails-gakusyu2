@@ -2,22 +2,29 @@ class PostsController < ApplicationController
   before_action :authenticate_user!, only: %i[new create edit update destroy followings]
 
   def index
-    posts = Post.latest.includes(:user).limit(10)
-    @posts = decorate_with_user(posts)
+    posts = Post.latest.limit(10)
+    @posts = decorate(posts)
     @post = Post.new
     render :timeline
   end
 
-  def followings
-    posts = current_user.following_posts.latest.includes(:user).limit(10)
-    @posts = decorate_with_user(posts)
+  def idx_followings
+    posts = current_user.following_posts.latest.limit(10)
+    @posts = decorate(posts)
     @post = Post.new
     render :timeline
   end
 
-  def user
+  def idx_likes
+    posts = current_user.liked_posts.latest.limit(10)
+    @posts = decorate(posts)
+    @post = Post.new
+    render :timeline
+  end
+
+  def idx_user
     @user = User.find(params[:id])
-    @posts = decorate_with_user(@user.posts.latest.includes(:user).limit(10))
+    @posts = decorate(@user.posts.latest.limit(10))
     @post = Post.new
     render :timeline
   end
@@ -27,10 +34,17 @@ class PostsController < ApplicationController
     type = params[:type]
 
     posts = Post.get_posts(type, start, current_user)
-    @posts = decorate_with_user(posts)
+    @posts = decorate(posts)
     respond_to do |format|
       format.json { render json: @posts }
     end
+  end
+
+  # 投稿に対するユーザー一覧を取得
+  def likers
+    post = Post.find(params[:id])
+    @likers = post.likers
+    render json: @likers
   end
 
   def new
@@ -40,11 +54,9 @@ class PostsController < ApplicationController
 
   def create
     @post = current_user.posts.build(post_params)
-    puts "Post Params: #{post_params.inspect}" # パラメータの出力
     if @post.save
       redirect_back(fallback_location: root_path, notice: '投稿しました。')
     else
-      puts "Post could not be saved. Errors: #{@post.errors.full_messages}" # 保存失敗とエラーメッセージのログ出力
       redirect_back(fallback_location: root_path, alert: '投稿に失敗しました。')
     end
   end
@@ -69,6 +81,18 @@ class PostsController < ApplicationController
     redirect_back(fallback_location: root_path, notice: '削除しました。')
   end
 
+  # いいね機能 ------------------------------------------------------------------
+  def toggle_like
+    post = Post.find(params[:id])
+    if post.liked_by?(current_user)
+      post.unlike_by(current_user)
+      render json: { status: 'unliked', count: post.likes_count }
+    else
+      post.like_by(current_user)
+      render json: { status: 'liked', count: post.likes_count }
+    end
+  end
+
   helper_method :current_action
   def current_action
     action_name
@@ -80,15 +104,25 @@ class PostsController < ApplicationController
     params.require(:post).permit(:content)
   end
 
-  # ユーザー情報をpostにマージするメソッドを定義
-  def decorate_with_user(posts)
-    # ⚠️ html側でメソッド呼び出しができなくなりモデルメソッドを使えなくなる。post.idなどはpost['id']として取得する
+  def decorate(posts)
+    users = User.where(id: posts.map(&:user_id)).index_by(&:id)
+    liked_posts = current_user ? current_user.liked_post_ids : [] # *_idsメソッドはActiveRecordによって自動生成される
     posts.map do |post|
-      post.as_json.merge(
-        'following' => current_user&.following?(post.user),
-        'username' => post.user.username.to_s,
-        'user_id' => post.user.id
-      )
+      merge_info(post, users, liked_posts)
     end
+  end
+
+  # フロントで必要な情報をマージ
+  def merge_info(post, users, liked_posts)
+    user = users[post.user_id]
+    # ⚠️ html側でメソッド呼び出しができなくなりモデルメソッドを使えなくなる。
+    # これによりビューファイルでは、post.idなどをpost['id']として取得する必要がある。
+    post.as_json.merge(
+      'following' => current_user&.following?(user),
+      'username' => user.username.to_s,
+      'user_id' => user.id,
+      'likes_count' => post.likes_count,
+      'liked' => liked_posts.include?(post.id)
+    )
   end
 end

@@ -12,10 +12,13 @@
   - if user_signed_in?
     %li.nav-item
       = link_to 'フォロー', timeline_followings_path,
-                class: "nav-link #{'active' if current_action == 'followings'}"
+                class: "nav-link #{'active' if current_action == 'idx_followings'}"
+    %li.nav-item
+      = link_to 'いいね', timeline_likes_path,
+                class: "nav-link #{'active' if current_action == 'idx_likes'}"
     %li.nav-item
       = link_to '自分', timeline_user_path(current_user),
-                class: "nav-link #{'active' if current_action == 'user'}"
+                class: "nav-link #{'active' if current_action == 'idx_user'}"
 -# カード -----------------------------------------------------------------------
 .container.d-flex.align-items-center
   .posts.d-flex.flex-row.mx-auto.overflow-auto{
@@ -36,38 +39,63 @@
               = post['updated_at'].in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M')
           .bottom-content
             %hr
-            .d-flex.justify-content-between
-              -# 左ボタン-----------------------------------
-              %p.card-text
-                - if current_user&.id != post['user_id'] # あとで修正
-                  %button.btn.btn-outline-secondary{
+            .row
+              -# ユーザー名 || 編集
+              .col-8
+                - if current_user && current_user.id == post['user_id']
+                  .bi.bi-pencil-square{
                     'data-bs-toggle': 'modal',
                     'data-controller': 'modal',
-                    'data-modal-type': 'user',
-                    'data-bs-target': '#userModal',
-                    'data-user-id': post['user_id'],
-                    'data-action': 'click->modal#showUser'
-                  }= post['username']
-              -# 右ボタン-----------------------------------
-              - if user_signed_in?
-                - if current_user.id == post['user_id']
-                  %button.btn.mb-4.btn-secondary{
-                    'data-bs-toggle': 'modal',
-                    'data-controller': 'modal',
-                    'data-modal-type': 'post',
                     'data-bs-target': '#editModal',
+                    'data-action': 'click->modal#editPost',
                     'data-post-id': post['id'],
                     'data-post-content': post['content'],
                     'data-post-updated-at': post['updated_at'].in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M'),
-                    'data-action': 'click->modal#edit'
-                  } 編集
-                - else
-                  %button.btn.mb-4.toggleFollow{
-                    'data-controller': 'follow',
-                    'data-user-id': post['user_id'],
-                    'data-is-followed': post['following'].to_s,
-                    'data-action': 'click->follow#toggleFollow'
                   }
+                - else
+                  %button.btn.btn-outline-secondary{
+                    'data-bs-toggle': 'modal',
+                    'data-controller': 'modal',
+                    'data-bs-target': '#userModal',
+                    'data-action': 'click->modal#showUser',
+                    'data-user-id': post['user_id'],
+                    'data-my-id': current_user&.id,
+                    'data-is-followed': post['following'].to_s,
+                    'data-post-id': 'none',
+                  }= post['username']
+              .col-1
+              -# いいね
+              .col-1
+                - if user_signed_in? && current_user.id != post['user_id']
+                  .i{
+                    'data-controller': 'like',
+                    'data-post-liked': post['liked'],
+                    'data-post-id': post['id'],
+                    'data-action': 'click->like#toggleLike'
+                  }
+                    - if post['liked']
+                      %heart.bi.bi-heart-fill{style: "color: #A54824;"}
+                    - else
+                      %heart.bi.bi-heart{style: "color: #A54824;"}
+                - else
+                  .bi.bi-heart
+              -# いいね数
+              .col-2{id: "likes-count-#{post['id']}", 
+                      'data-bs-toggle': 'modal',
+                      'data-bs-target': '#likersModal',
+                      'data-controller': 'modal',
+                      'data-action': 'click->modal#showLikers',
+                      'data-post-id': post['id'],
+                      'data-my-id': current_user&.id,
+                    }
+                = post['likes_count']
+              -# %button.btn.mb-4.toggleFollow{
+              -#   'data-controller': 'follow',
+              -#   'data-user-id': post['user_id'],
+              -#   'data-is-followed': post['following'].to_s,
+              -#   'data-action': 'click->follow#toggleFollow'
+              -# }
+              
     .end-of-data.posts_card.border-0
       .card-body.d-flex.flex-row.justify-content-center
         %h5.card-title No more data
@@ -108,7 +136,6 @@
           = form.text_area :content, class: 'form-control', maxlength: 140
           .actions.mt-3.d-flex.justify-content-end.gap-5
             = form.submit '投稿', class: 'btn btn-primary'
-
 -# 投稿編集モーダル -----------------------------------------------------------------
 .modal.fade{ id: 'editModal', tabindex: '-1', 'aria-hidden': 'true' }
   .modal-dialog
@@ -135,28 +162,29 @@
       .modal-body
         .container-fluid
           .row.gap-4.user-profile
-            .col-2
+            .col-3
               %strong プロフィール :
-            .col-8
+            .col
               %span.profile-content
           .row.gap-4.user-blog-url
-            .col-2
+            .col-3
               %strong ブログURL :
-            .col-8
+            .col
               = link_to 'user-blog-url-link', '#', class: 'user-blog-url-link'
           .row.gap-4
             .col-8
-            .col-2
-              -# 自分のページではない場合
-              %button.btn.toggleFollow{
-                'data-controller': 'modal',
-                'data-action': 'click->modal#toggleFollow'
-              }
-
--# -----------------------------------------------------------------------------
--# -# POSTモーダル
--# .modal.fade#postModal{ tabindex: '-1', aria_hidden: 'true' }
--#   .modal-dialog
--#     .modal-content
--#       .modal-body
--#         = render 'form'
+            .col
+              - if user_signed_in?
+                %button.btn.toggleFollow{
+                  'data-controller': 'follow',
+                  'data-action': 'click->follow#toggleFollow',
+                }
+-# Likersモーダル -----------------------------------------------------
+.modal.fade{ id: 'likersModal', tabindex: '-1', 'aria-hidden': 'true' }
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %h1.modal-title.fs-5{ id: 'likersModalLabel' } この投稿にいいねしたユーザー
+        %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }
+      .modal-body
+        %ul{id: 'likersList'}

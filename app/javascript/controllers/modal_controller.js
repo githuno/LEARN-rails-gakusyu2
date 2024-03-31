@@ -1,18 +1,8 @@
 import { Controller } from "@hotwired/stimulus";
 import FollowController from "./follow_controller";
 
-class ModalController 
-extends Controller {
-  edit(event) {
-    console.log("edit");
-    const modalType = event.target.dataset.modalType;
-
-    if (modalType === "post") {
-      this.editPost(event);
-    } else if (modalType === "user") {
-      this.showUser(event);
-    }
-  }
+class ModalController extends Controller {
+  // 投稿編集 -------------------------------------------------------------------
   editPost(event) {
     console.log("editPost");
     const postId = event.target.dataset.postId;
@@ -24,17 +14,17 @@ extends Controller {
     const updatedAtField = document.querySelector("#editModal .updated-at");
     const deleteLink = document.querySelector("#editModal .btn-danger");
 
-    form.action = "/posts/" + postId; // 編集のURLに変更
-    form.method = "patch"; // フォームのメソッドをPATCHに変更
+    form.setAttribute("action", "/posts/" + postId); // フォームのアクションを編集のURLに変更
+    form.setAttribute("method", "patch"); // フォームのメソッドをPATCHに変更
     textArea.value = postContent; // テキストエリアの内容を投稿の内容に変更
     updatedAtField.textContent = "最終更新日時: " + postUpdatedAt; // 最終更新日時を設定
     deleteLink.href = "/posts/" + postId; // 削除リンクのhref属性を設定
   }
-
+  // ユーザー情報 ---------------------------------------------------------------
   showUser(event) {
-    console.log("showUser");
     const userId = event.target.dataset.userId;
-
+    const myId = event.target.dataset.myId;
+    // ユーザー情報を取得
     fetch(`/users/${userId}/show_json`)
       .then((response) => response.json())
       .then((user) => {
@@ -45,28 +35,89 @@ extends Controller {
         const userBlogUrlLink = document.querySelector(
           "#userModal .user-blog-url-link"
         );
-        const followButton = document.querySelector("#userModal .toggleFollow");
-
         userNameField.textContent = user.username; // ヘッダータイトルにユーザー名をセット
         userProfileField.textContent = user.profile; // プロフィール内容をセット
-        userBlogUrlLink.href = user.blog_url; // ブログURLのリンクを設定
-        userBlogUrlLink.textContent = user.blog_url;
+        if (userBlogUrlLink) {
+          userBlogUrlLink.href = user.blog_url; // ブログURLのリンクを設定
+          userBlogUrlLink.textContent = user.blog_url; // ブログURLのリンクを設定
+        }
 
-        // あとで修正：自分のユーザー情報の場合はフォローボタンをマイページへのリンクに変更
+        const followButton = document.querySelector("#userModal .toggleFollow");
+        // 自分のユーザー情報の場合はフォローボタンをマイページへのリンクに変更
+        if (followButton) {
+          if (userId === myId) {
+            // followbuttonをmypageに変更しマイページにリンク
+            const mypage = document.createElement("div");
+            mypage.className = "mypage";
+            mypage.innerHTML = `<a href="/users/${userId}">マイページ</a>`;
+            followButton.replaceWith(mypage);
+          } else {
+            followButton.dataset.userId = user.id;
+            followButton.dataset.isFollowed = user.is_followed;
+          }
 
-        // 既存のクリックイベントを削除
-        followButton.removeEventListener("click", this.toggleFollow.bind(this));
+          // followControllerをconnectする
+          const followController = new FollowController();
+          followController.connect();
+        }
+      });
 
-        // フォローボタンの更新
-        followButton.dataset.userId = user.id;
-        followButton.dataset.isFollowed = user.is_followed;
+    const userModalElement = document.getElementById("userModal");
+    forLikersModal(userModalElement);
+    userModalElement.dataset.postId = event.target.dataset.postId;
+  }
+  // Likers一覧 ----------------------------------------------------------------
+  showLikers(event) {
+    const postId = event.currentTarget.dataset.postId;
+    const myId = event.target.dataset.myId;
+
+    // いいねしたユーザーの一覧を取得
+    fetch(`/posts/${postId}/likers`)
+      .then((response) => response.json())
+      .then((users) => {
+        const usersList = document.getElementById("likersList");
+        usersList.innerHTML = "";
+
+        // ユーザーの一覧をモーダルに表示
+        users.forEach((user) => {
+          const li = document.createElement("li");
+          const a = document.createElement("a");
+          a.textContent = user.username;
+          a.dataset.bsToggle = "modal";
+          a.dataset.controller = "modal";
+          a.dataset.modalType = "user";
+          a.dataset.bsTarget = "#userModal";
+          a.dataset.userId = user.id;
+          a.dataset.postId = postId;
+          a.dataset.myId = myId;
+          a.dataset.action = "click->modal#showUser";
+          a.style.textDecoration = "underline"; // 下線を追加
+          li.appendChild(a);
+          usersList.appendChild(li);
+        });
       });
   }
-
-  toggleFollow(event) {
-    const followController = new FollowController();
-    followController.toggleFollow(event);
-  }
 }
+
+// likersモーダル→ userモーダル→ likersモーダル
+const forLikersModal = (userModalElement) => {
+  userModalElement.addEventListener("hidden.bs.modal", function (event) {
+    const postId = event.target.dataset.postId;
+    if (postId !== "none") {
+      const likersModal = new bootstrap.Modal(
+        document.getElementById("likersModal")
+      );
+      userModalElement.dataset.postId = "none"; // userModalのpostidをnoneに変更
+      // mypageボタン(.btn.toggleFollow)にreplace
+      const mypage = document.querySelector(".mypage");
+      if (mypage) {
+        const button = document.createElement("button");
+        button.className = "btn toggleFollow";
+        mypage.replaceWith(button);
+      }
+      likersModal.show();
+    }
+  });
+};
 
 export default ModalController;

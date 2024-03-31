@@ -71,6 +71,12 @@ class ScrollController extends Controller {
     if (this.autoScrollInterval) {
       clearInterval(this.autoScrollInterval);
     }
+    let scrollAmount = this.element.scrollLeft; // 現在のスクロール位置で初期化
+    const scrollSpeed = 5; // スクロール速度を調整（大きいほど速くスクロール）
+    this.autoScroll = () => {
+      scrollAmount += scrollSpeed;
+      this.element.scrollLeft = scrollAmount;
+    };
     this.autoScrollInterval = setInterval(this.autoScroll, 20);
   }
 
