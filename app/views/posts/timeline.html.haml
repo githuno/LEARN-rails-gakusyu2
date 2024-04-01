@@ -36,11 +36,11 @@
             }
               = post['content']
             %p.card-text
-              = post['updated_at'].in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M')
+              = post['updated_at']
           .bottom-content
             %hr
             .row
-              -# ユーザー名 || 編集
+              -# 編集 or ユーザー名
               .col-8
                 - if current_user && current_user.id == post['user_id']
                   .bi.bi-pencil-square{
@@ -48,9 +48,7 @@
                     'data-controller': 'modal',
                     'data-bs-target': '#editModal',
                     'data-action': 'click->modal#editPost',
-                    'data-post-id': post['id'],
-                    'data-post-content': post['content'],
-                    'data-post-updated-at': post['updated_at'].in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M'),
+                    'data-post': post.to_json,
                   }
                 - else
                   %button.btn.btn-outline-secondary{
@@ -58,10 +56,9 @@
                     'data-controller': 'modal',
                     'data-bs-target': '#userModal',
                     'data-action': 'click->modal#showUser',
-                    'data-user-id': post['user_id'],
                     'data-my-id': current_user&.id,
-                    'data-is-followed': post['following'].to_s,
-                    'data-post-id': 'none',
+                    'data-post': post.to_json,
+                    'data-root': 'timeline',
                   }= post['username']
               .col-1
               -# いいね
@@ -69,11 +66,10 @@
                 - if user_signed_in? && current_user.id != post['user_id']
                   .i{
                     'data-controller': 'like',
-                    'data-post-liked': post['liked'],
-                    'data-post-id': post['id'],
+                    'data-post': post.to_json,
                     'data-action': 'click->like#toggleLike'
                   }
-                    - if post['liked']
+                    - if post['is_liked']
                       %heart.bi.bi-heart-fill{style: "color: #A54824;"}
                     - else
                       %heart.bi.bi-heart{style: "color: #A54824;"}
@@ -85,17 +81,10 @@
                       'data-bs-target': '#likersModal',
                       'data-controller': 'modal',
                       'data-action': 'click->modal#showLikers',
-                      'data-post-id': post['id'],
+                      'data-post': post.to_json,
                       'data-my-id': current_user&.id,
                     }
                 = post['likes_count']
-              -# %button.btn.mb-4.toggleFollow{
-              -#   'data-controller': 'follow',
-              -#   'data-user-id': post['user_id'],
-              -#   'data-is-followed': post['following'].to_s,
-              -#   'data-action': 'click->follow#toggleFollow'
-              -# }
-              
     .end-of-data.posts_card.border-0
       .card-body.d-flex.flex-row.justify-content-center
         %h5.card-title No more data
@@ -156,6 +145,7 @@
 .modal.fade{ id: 'userModal', tabindex: '-1', 'aria-hidden': 'true' }
   .modal-dialog.modal-lg
     .modal-content
+      = render 'post_content'
       .modal-header
         %h1.modal-title.fs-5.user-name{ id: 'userModalLabel' }
         %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }
@@ -183,7 +173,8 @@
 .modal.fade{ id: 'likersModal', tabindex: '-1', 'aria-hidden': 'true' }
   .modal-dialog
     .modal-content
-      .modal-header
+      = render 'post_content'
+      .modal-header 
         %h1.modal-title.fs-5{ id: 'likersModalLabel' } この投稿にいいねしたユーザー
         %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }
       .modal-body

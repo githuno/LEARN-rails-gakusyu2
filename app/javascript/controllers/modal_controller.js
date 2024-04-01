@@ -2,30 +2,38 @@ import { Controller } from "@hotwired/stimulus";
 import FollowController from "./follow_controller";
 
 class ModalController extends Controller {
-  // 投稿編集 -------------------------------------------------------------------
+  // 投稿内容をモーダルに表示 -----------------------------------------------------
+  fillPostContent(post, targetElement) {
+    const contentElement = targetElement.querySelector("#postContent");
+    const dateElement = targetElement.querySelector("#postUpdatedAt");
+    contentElement.textContent = post.content;
+    dateElement.textContent = post.updated_at;
+  }
+  // 投稿編集モーダル -----------------------------------------------------------
   editPost(event) {
     console.log("editPost");
-    const postId = event.target.dataset.postId;
-    const postContent = event.target.dataset.postContent;
-    const postUpdatedAt = event.target.dataset.postUpdatedAt;
+    const post = JSON.parse(event.target.dataset.post);
 
     const form = document.querySelector("#editModal form");
     const textArea = form.querySelector("textarea");
     const updatedAtField = document.querySelector("#editModal .updated-at");
     const deleteLink = document.querySelector("#editModal .btn-danger");
 
-    form.setAttribute("action", "/posts/" + postId); // フォームのアクションを編集のURLに変更
+    form.setAttribute("action", "/posts/" + post.id); // フォームのアクションを編集のURLに変更
     form.setAttribute("method", "patch"); // フォームのメソッドをPATCHに変更
-    textArea.value = postContent; // テキストエリアの内容を投稿の内容に変更
-    updatedAtField.textContent = "最終更新日時: " + postUpdatedAt; // 最終更新日時を設定
-    deleteLink.href = "/posts/" + postId; // 削除リンクのhref属性を設定
+    textArea.value = post.content; // テキストエリアの内容を投稿の内容に変更
+    updatedAtField.textContent = "最終更新日時: " + post.updated_at; // 最終更新日時を設定
+    deleteLink.href = "/posts/" + post.id; // 削除リンクのhref属性を設定
   }
-  // ユーザー情報 ---------------------------------------------------------------
+  // ユーザー情報モーダル --------------------------------------------------------
   showUser(event) {
-    const userId = event.target.dataset.userId;
+    let pageRoot = event.target.dataset.root;
+    const post = JSON.parse(event.target.dataset.post);
     const myId = event.target.dataset.myId;
-    // ユーザー情報を取得
-    fetch(`/users/${userId}/show_json`)
+    const modalElement = document.getElementById("userModal");
+    this.fillPostContent(post, modalElement);
+
+    fetch(`/users/${post.user_id}/show_json`)
       .then((response) => response.json())
       .then((user) => {
         const userNameField = document.querySelector("#userModal .user-name");
@@ -45,15 +53,13 @@ class ModalController extends Controller {
         const followButton = document.querySelector("#userModal .toggleFollow");
         // 自分のユーザー情報の場合はフォローボタンをマイページへのリンクに変更
         if (followButton) {
-          if (userId === myId) {
-            // followbuttonをmypageに変更しマイページにリンク
+          if (post.user_id === myId) {
             const mypage = document.createElement("div");
             mypage.className = "mypage";
-            mypage.innerHTML = `<a href="/users/${userId}">マイページ</a>`;
+            mypage.innerHTML = `<a href="/users/${post.user_id}">マイページ</a>`;
             followButton.replaceWith(mypage);
           } else {
-            followButton.dataset.userId = user.id;
-            followButton.dataset.isFollowed = user.is_followed;
+            followButton.dataset.post = JSON.stringify(post);
           }
 
           // followControllerをconnectする
@@ -61,18 +67,29 @@ class ModalController extends Controller {
           followController.connect();
         }
       });
-
-    const userModalElement = document.getElementById("userModal");
-    forLikersModal(userModalElement);
-    userModalElement.dataset.postId = event.target.dataset.postId;
+    
+    const userModal = bootstrap.Modal.getInstance(modalElement);
+    if(pageRoot === "likers") { // pageRootがlikers一覧の場合は再度likersModalを表示する
+      userModal._element.addEventListener(
+        "hidden.bs.modal",
+        this.reopenLikersModal
+      );
+    } else {
+      userModal._element.removeEventListener(
+        "hidden.bs.modal",
+        this.reopenLikersModal
+      );
+    }
   }
-  // Likers一覧 ----------------------------------------------------------------
+  // Likers一覧モーダル ---------------------------------------------------------
   showLikers(event) {
-    const postId = event.currentTarget.dataset.postId;
+    const post = JSON.parse(event.target.dataset.post);
     const myId = event.target.dataset.myId;
+    const modalElement = document.getElementById("likersModal");
+    this.fillPostContent(post, modalElement);
 
     // いいねしたユーザーの一覧を取得
-    fetch(`/posts/${postId}/likers`)
+    fetch(`/posts/${post.id}/likers`)
       .then((response) => response.json())
       .then((users) => {
         const usersList = document.getElementById("likersList");
@@ -87,8 +104,8 @@ class ModalController extends Controller {
           a.dataset.controller = "modal";
           a.dataset.modalType = "user";
           a.dataset.bsTarget = "#userModal";
-          a.dataset.userId = user.id;
-          a.dataset.postId = postId;
+          a.dataset.post = JSON.stringify(post);
+          a.dataset.root = "likers";
           a.dataset.myId = myId;
           a.dataset.action = "click->modal#showUser";
           a.style.textDecoration = "underline"; // 下線を追加
@@ -97,27 +114,22 @@ class ModalController extends Controller {
         });
       });
   }
-}
 
-// likersモーダル→ userモーダル→ likersモーダル
-const forLikersModal = (userModalElement) => {
-  userModalElement.addEventListener("hidden.bs.modal", function (event) {
-    const postId = event.target.dataset.postId;
-    if (postId !== "none") {
-      const likersModal = new bootstrap.Modal(
-        document.getElementById("likersModal")
-      );
-      userModalElement.dataset.postId = "none"; // userModalのpostidをnoneに変更
-      // mypageボタン(.btn.toggleFollow)にreplace
-      const mypage = document.querySelector(".mypage");
-      if (mypage) {
-        const button = document.createElement("button");
-        button.className = "btn toggleFollow";
-        mypage.replaceWith(button);
-      }
-      likersModal.show();
+  reopenLikersModal(event) {
+    const likersModalElement = document.getElementById("likersModal");
+    const likersModal = bootstrap.Modal.getInstance(likersModalElement);
+
+    // mypageボタンを(.btn.toggleFollow)にreplace
+    const mypage = document.querySelector(".mypage");
+    if (mypage) {
+      const button = document.createElement("button");
+      button.className = "btn toggleFollow";
+      mypage.replaceWith(button);
     }
-  });
-};
+
+    // 再度モーダルを表示
+    likersModal.show();
+  }
+}
 
 export default ModalController;

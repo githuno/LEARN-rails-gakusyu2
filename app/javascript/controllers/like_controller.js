@@ -2,9 +2,9 @@ import { Controller } from "@hotwired/stimulus";
 
 class LikeController extends Controller {
   toggleLike() {
-    const postId = this.element.dataset.postId;
+    const post = JSON.parse(this.element.dataset.post);
 
-    fetch(`/posts/${postId}/toggle_like`, {
+    fetch(`/posts/${post.id}/toggle_like`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -15,7 +15,7 @@ class LikeController extends Controller {
       .then((response) => response.json())
       .then((data) => {
         this.updateLikeState(data.status === "liked");
-        this.updateLikesCount(postId, data.count);
+        this.updateLikesCount(post, data.count);
       });
   }
 
@@ -30,14 +30,12 @@ class LikeController extends Controller {
     }
   }
 
-  updateLikesCount(postId, count) {
-    const likesCountElement = document.querySelector(`#likes-count-${postId}`);
+  updateLikesCount(post, count) {
+    const likesCountElement = document.querySelector(`#likes-count-${post.id}`);
     if (likesCountElement) {
       likesCountElement.textContent = count;
     }
   }
-
-
 }
 
 export default LikeController;

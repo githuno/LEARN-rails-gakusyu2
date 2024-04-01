@@ -118,11 +118,13 @@ class PostsController < ApplicationController
     # ⚠️ html側でメソッド呼び出しができなくなりモデルメソッドを使えなくなる。
     # これによりビューファイルでは、post.idなどをpost['id']として取得する必要がある。
     post.as_json.merge(
-      'following' => current_user&.following?(user),
       'username' => user.username.to_s,
       'user_id' => user.id,
       'likes_count' => post.likes_count,
-      'liked' => liked_posts.include?(post.id)
+      'is_liked' => liked_posts.include?(post.id),
+      'is_followed' => current_user&.following?(user),
+      # 日本時間のyyyy/mm/dd hh:mm形式に変換
+      'updated_at' => post.updated_at.in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M')
     )
   end
 end

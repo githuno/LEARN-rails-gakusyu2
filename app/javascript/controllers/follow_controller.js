@@ -4,8 +4,8 @@ class FollowController extends Controller {
   connect() {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const isFollowed = entry.target.dataset.isFollowed === "true";
+        if (entry.isIntersecting && entry.target.dataset.post) {
+          const isFollowed = JSON.parse(entry.target.dataset.post).is_followed;
           this.setFollowButtonState(entry.target, isFollowed);
         }
       });
@@ -20,11 +20,11 @@ class FollowController extends Controller {
   }
 
   toggleFollow(event) {
-    const userId = event.target.dataset.userId;
+    const post = JSON.parse(event.target.dataset.post)
     const csrfToken = document
       .querySelector('meta[name="csrf-token"]')
       .getAttribute("content");
-    fetch(`/users/${userId}/toggle_follow`, {
+    fetch(`/users/${post.user_id}/toggle_follow`, {
       method: "POST",
       headers: {
         "X-Requested-With": "XMLHttpRequest",
@@ -35,21 +35,13 @@ class FollowController extends Controller {
       .then((response) => response.json())
       .then((data) => {
         const isFollowed = data.status === "followed";
-        this.updateFollowButtons(userId, isFollowed);
+        const button = event.target;
+        this.setFollowButtonState(button, isFollowed);
       });
   }
 
-  updateFollowButtons(userId, isFollowed) {
-    const followButtons = document.querySelectorAll(
-      `button.toggleFollow[data-user-id="${userId}"]`
-    );
-    followButtons.forEach((button) => {
-      this.setFollowButtonState(button, isFollowed);
-    });
-  }
-
   setFollowButtonState(button, isFollowed) {
-    button.dataset.isFollowed = isFollowed.toString();
+    JSON.parse(button.dataset.post).is_followed = isFollowed;
     button.textContent = isFollowed ? "フォロー解除" : "フォロー";
     if (isFollowed) {
       button.classList.remove("btn-outline-primary");
