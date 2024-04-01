@@ -25,6 +25,31 @@ class ModalController extends Controller {
     updatedAtField.textContent = "最終更新日時: " + post.updated_at; // 最終更新日時を設定
     deleteLink.href = "/posts/" + post.id; // 削除リンクのhref属性を設定
   }
+  // コメントモーダル -----------------------------------------------------------
+  showComments(event) {
+    const post = JSON.parse(event.target.dataset.post);
+    const modalElement = document.getElementById("commentModal");
+    this.fillPostContent(post, modalElement);
+
+    // コメント一覧を取得
+    fetch(`/posts/${post.id}/comments`)
+      .then((response) => response.json())
+      .then((comments) => {
+        const commentsList = modalElement.querySelector("#commentsList");
+        commentsList.innerHTML = "";
+        comments.forEach((comment) => {
+          const li = document.createElement("li");
+          li.textContent = comment.content;
+          commentsList.appendChild(li);
+        });
+      });
+
+    // ボタンに投稿情報をセット
+    const submitButton = modalElement.querySelector(
+      "#commentModal .addComment"
+    );
+    submitButton.dataset.post = JSON.stringify(post);
+  }
   // ユーザー情報モーダル --------------------------------------------------------
   showUser(event) {
     let pageRoot = event.target.dataset.root;
@@ -36,12 +61,14 @@ class ModalController extends Controller {
     fetch(`/users/${post.user_id}/show_json`)
       .then((response) => response.json())
       .then((user) => {
-        const userNameField = document.querySelector("#userModal .user-name");
+        const userNameField = document.querySelector(
+          "#userModal .name"
+        );
         const userProfileField = document.querySelector(
           "#userModal .profile-content"
         );
         const userBlogUrlLink = document.querySelector(
-          "#userModal .user-blog-url-link"
+          "#userModal .blog-link"
         );
         userNameField.textContent = user.username; // ヘッダータイトルにユーザー名をセット
         userProfileField.textContent = user.profile; // プロフィール内容をセット
@@ -59,6 +86,7 @@ class ModalController extends Controller {
             mypage.innerHTML = `<a href="/users/${post.user_id}">マイページ</a>`;
             followButton.replaceWith(mypage);
           } else {
+            // ボタンに投稿情報をセット
             followButton.dataset.post = JSON.stringify(post);
           }
 
@@ -67,9 +95,10 @@ class ModalController extends Controller {
           followController.connect();
         }
       });
-    
+
     const userModal = bootstrap.Modal.getInstance(modalElement);
-    if(pageRoot === "likers") { // pageRootがlikers一覧の場合は再度likersModalを表示する
+    if (pageRoot === "likers") {
+      // pageRootがlikersの場合はモーダルを閉じたとき再度likersModalを表示する
       userModal._element.addEventListener(
         "hidden.bs.modal",
         this.reopenLikersModal

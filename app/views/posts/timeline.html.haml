@@ -1,10 +1,10 @@
--# ヘッダー ---------------------------------------------------------------------
+-# ヘッダー --------------------------------------------------------------------
 %h1.text-center.font-weight-bold.mb-4.border-bottom timeline
 .d-flex.align-items-center.gap-2
   - button = user_signed_in? ? 'マイページ' : 'ログイン'
   - path = user_signed_in? ? user_path(current_user) : new_user_session_path
   = link_to button, path, class: 'btn btn-secondary mb-4'
--# Navバー ----------------------------------------------------------------------
+-# Navバー ---------------------------------------------------------------------
 .nav.nav-tabs.mb-4
   %li.nav-item
     = link_to '全て', timeline_path,
@@ -19,7 +19,7 @@
     %li.nav-item
       = link_to '自分', timeline_user_path(current_user),
                 class: "nav-link #{'active' if current_action == 'idx_user'}"
--# カード -----------------------------------------------------------------------
+-# カード ----------------------------------------------------------------------
 .container.d-flex.align-items-center
   .posts.d-flex.flex-row.mx-auto.overflow-auto{
     'data-controller': 'posts',
@@ -41,26 +41,32 @@
             %hr
             .row
               -# 編集 or ユーザー名
-              .col-8
+              .col-7
                 - if current_user && current_user.id == post['user_id']
                   .bi.bi-pencil-square{
                     'data-bs-toggle': 'modal',
-                    'data-controller': 'modal',
                     'data-bs-target': '#editModal',
+                    'data-controller': 'modal',
                     'data-action': 'click->modal#editPost',
                     'data-post': post.to_json,
                   }
                 - else
                   %button.btn.btn-outline-secondary{
                     'data-bs-toggle': 'modal',
-                    'data-controller': 'modal',
                     'data-bs-target': '#userModal',
+                    'data-controller': 'modal',
                     'data-action': 'click->modal#showUser',
                     'data-my-id': current_user&.id,
                     'data-post': post.to_json,
                     'data-root': 'timeline',
                   }= post['username']
-              .col-1
+              -# コメント
+              .col-2.bi.bi-chat{'data-bs-toggle': 'modal',
+                  'data-bs-target': '#commentModal',
+                  'data-controller': 'modal',
+                  'data-action': 'click->modal#showComments',
+                  'data-post': post.to_json,
+                }
               -# いいね
               .col-1
                 - if user_signed_in? && current_user.id != post['user_id']
@@ -103,17 +109,7 @@
       'data-bs-target': '#newModal'
     } 新規投稿
 
--# 投稿詳細モーダル -----------------------------------------------------------------
-.modal.fade{ id: 'postModal', tabindex: '-1', 'aria-hidden': 'true' }
-  .modal-dialog
-    .modal-content
-      .modal-header
-        %h1.modal-title.fs-5{ id: 'postDetailModalLabel' } 投稿詳細
-        %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }
-      .modal-body
-        %p.h5.card-title{ id: 'postDetailContent' }
-        %p.card-text{ id: 'postDetailUpdatedAt' }
--# 新規投稿モーダル -----------------------------------------------------------------
+-# 新規投稿モーダル -------------------------------------------------------------
 .modal.fade{ id: 'newModal', tabindex: '-1', 'aria-hidden': 'true' }
   .modal-dialog
     .modal-content
@@ -125,7 +121,7 @@
           = form.text_area :content, class: 'form-control', maxlength: 140
           .actions.mt-3.d-flex.justify-content-end.gap-5
             = form.submit '投稿', class: 'btn btn-primary'
--# 投稿編集モーダル -----------------------------------------------------------------
+-# 投稿編集モーダル -------------------------------------------------------------
 .modal.fade{ id: 'editModal', tabindex: '-1', 'aria-hidden': 'true' }
   .modal-dialog
     .modal-content
@@ -143,33 +139,37 @@
             = form.submit '更新', class: 'btn btn-primary'
 -# ユーザーモーダル -------------------------------------------------------------
 .modal.fade{ id: 'userModal', tabindex: '-1', 'aria-hidden': 'true' }
-  .modal-dialog.modal-lg
+  .modal-dialog
     .modal-content
       = render 'post_content'
       .modal-header
-        %h1.modal-title.fs-5.user-name{ id: 'userModalLabel' }
+        %modal-title.fs-5{ id: 'userModalLabel' }
+          この投稿のユーザー情報
         %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }
       .modal-body
         .container-fluid
-          .row.gap-4.user-profile
+          .row.gap-4
+            .col-3
+              %strong ユーザー名 :
+            .col
+              %h3.name
+          .row.gap-4
             .col-3
               %strong プロフィール :
             .col
               %span.profile-content
-          .row.gap-4.user-blog-url
+          .row.gap-4
             .col-3
               %strong ブログURL :
             .col
-              = link_to 'user-blog-url-link', '#', class: 'user-blog-url-link'
-          .row.gap-4
-            .col-8
-            .col
-              - if user_signed_in?
-                %button.btn.toggleFollow{
-                  'data-controller': 'follow',
-                  'data-action': 'click->follow#toggleFollow',
-                }
--# Likersモーダル -----------------------------------------------------
+              = link_to 'user-blog-url-link', '#', class: 'blog-link'
+          - if user_signed_in?
+            .m-4.d-flex.justify-content-end
+              %button.btn.toggleFollow{
+                'data-controller': 'follow',
+                'data-action': 'click->follow#toggleFollow',
+              }
+-# Likersモーダル ---------------------------------------------------------------
 .modal.fade{ id: 'likersModal', tabindex: '-1', 'aria-hidden': 'true' }
   .modal-dialog
     .modal-content
@@ -179,3 +179,22 @@
         %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }
       .modal-body
         %ul{id: 'likersList'}
+-# Commentモーダル --------------------------------------------------------------
+.modal.fade{ id: 'commentModal', tabindex: '-1', 'aria-hidden': 'true' }
+  .modal-dialog
+    .modal-content
+      = render 'post_content'
+      .modal-body
+        = form_with(local: true, class: 'mb-4') do |form|
+          = form.text_area :content, class: 'form-control', maxlength: 140, placeholder: 'コメントを入力してください', required: true
+          .actions.mt-3.d-flex.justify-content-end.gap-5
+            %button.btn.btn-primary.addComment{
+              'data-controller': 'comment',
+              'data-action': 'click->comment#addComment',
+            } コメント
+          %hr
+      .modal-header 
+        %h1.modal-title.fs-5{ id: 'commentModalLabel' } この投稿へのコメント
+        %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }
+      .modal-body
+        %ul{id: 'commentsList'}

@@ -33,4 +33,7 @@ class Post < ApplicationRecord
   def likes_count
     self[:likes_count]
   end
+
+  # コメント機能 ----------------------------------------------------------------
+  has_many :comments, dependent: :destroy # 投稿は複数のコメントを持ち、投稿が削除されたらコメントも削除
 end
