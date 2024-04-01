@@ -61,12 +61,13 @@
                     'data-root': 'timeline',
                   }= post['username']
               -# コメント
-              .col-2.bi.bi-chat{'data-bs-toggle': 'modal',
+              .col-2{'data-bs-toggle': 'modal',
                   'data-bs-target': '#commentModal',
                   'data-controller': 'modal',
                   'data-action': 'click->modal#showComments',
                   'data-post': post.to_json,
                 }
+                = image_tag 'chat-4.svg'
               -# いいね
               .col-1
                 - if user_signed_in? && current_user.id != post['user_id']
@@ -185,14 +186,15 @@
     .modal-content
       = render 'post_content'
       .modal-body
-        = form_with(local: true, class: 'mb-4') do |form|
-          = form.text_area :content, class: 'form-control', maxlength: 140, placeholder: 'コメントを入力してください', required: true
-          .actions.mt-3.d-flex.justify-content-end.gap-5
-            %button.btn.btn-primary.addComment{
-              'data-controller': 'comment',
-              'data-action': 'click->comment#addComment',
-            } コメント
-          %hr
+        - if user_signed_in?
+          = form_with(local: true, class: 'mb-4') do |form|
+            = form.text_area :content, class: 'form-control', maxlength: 140, placeholder: 'コメントを入力してください', required: true
+            .actions.mt-3.d-flex.justify-content-end.gap-5
+              %button.btn.btn-primary.addComment{
+                'data-controller': 'comment',
+                'data-action': 'click->comment#addComment',
+              } コメント
+            %hr
       .modal-header 
         %h1.modal-title.fs-5{ id: 'commentModalLabel' } この投稿へのコメント
         %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }

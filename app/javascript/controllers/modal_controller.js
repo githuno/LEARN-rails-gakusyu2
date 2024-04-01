@@ -48,7 +48,9 @@ class ModalController extends Controller {
     const submitButton = modalElement.querySelector(
       "#commentModal .addComment"
     );
-    submitButton.dataset.post = JSON.stringify(post);
+    if (submitButton) {
+      submitButton.dataset.post = JSON.stringify(post);
+    }
   }
   // ユーザー情報モーダル --------------------------------------------------------
   showUser(event) {
