@@ -1,3 +1,6 @@
+# メール送信を無効化
+ActionMailer::Base.perform_deliveries = false
+
 # ユーザーのダミーデータを作成
 10.times do
   User.create!(
@@ -36,3 +39,6 @@ User.all.each do |user|
     )
   end
 end
+
+# メール送信を再度有効化
+ActionMailer::Base.perform_deliveries = true

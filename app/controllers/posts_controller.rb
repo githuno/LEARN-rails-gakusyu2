@@ -120,12 +120,11 @@ class PostsController < ApplicationController
     post.as_json.merge(
       'username' => user.username.to_s,
       'user_id' => user.id,
-      'comments_count' => post.comments_count,
-      'likes_count' => post.likes_count,
       'is_liked' => liked_posts.include?(post.id),
       'is_followed' => current_user&.following?(user),
       # 日本時間のyyyy/mm/dd hh:mm形式に変換
-      'updated_at' => post.updated_at.in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M')
+      'updated_at' => post.updated_at.in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M'),
+      'id' => post.id.to_s # idを文字列に変換
     )
   end
 end
