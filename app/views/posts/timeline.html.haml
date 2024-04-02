@@ -21,19 +21,14 @@
                 class: "nav-link #{'active' if current_action == 'idx_user'}"
 -# カード ----------------------------------------------------------------------
 .container.d-flex.align-items-center
-  .posts.d-flex.flex-row.mx-auto.overflow-auto{
-    'data-controller': 'posts',
-    'data-my-id': current_user&.id,
-    'data-tl-type': current_action
+  .posts.d-flex.flex-row.mx-auto.overflow-auto{'data-controller': 'posts',
+    'data-my-id': current_user&.id,'data-tl-type': current_action
   }
     - @posts.each do |post|
       .posts_card.mr-2.mb-2{ tabindex: 0 }
         .card-body.d-flex.flex-column.justify-content-between
           .top-content
-            %p.h5.card-title{
-              'data-bs-toggle': 'modal',
-              'data-bs-target': '#postModal'
-            }
+            %p.h5.card-title
               = post['content']
             %p.card-text
               = post['updated_at']
@@ -43,16 +38,14 @@
               -# 編集 or ユーザー名
               .col-7
                 - if current_user && current_user.id == post['user_id']
-                  .bi.bi-pencil-square{
-                    'data-bs-toggle': 'modal',
+                  .bi.bi-pencil-square{'data-bs-toggle': 'modal',
                     'data-bs-target': '#editModal',
                     'data-controller': 'modal',
                     'data-action': 'click->modal#editPost',
                     'data-post': post.to_json,
                   }
                 - else
-                  %button.btn.btn-outline-secondary{
-                    'data-bs-toggle': 'modal',
+                  %button.btn.btn-outline-secondary{'data-bs-toggle': 'modal',
                     'data-bs-target': '#userModal',
                     'data-controller': 'modal',
                     'data-action': 'click->modal#showUser',
@@ -62,17 +55,25 @@
                   }= post['username']
               -# コメント
               .col-2{'data-bs-toggle': 'modal',
-                  'data-bs-target': '#commentModal',
-                  'data-controller': 'modal',
-                  'data-action': 'click->modal#showComments',
-                  'data-post': post.to_json,
+                'data-bs-target': '#commentModal',
+                'data-controller': 'modal',
+                'data-action': 'click->modal#showComments',
+                'data-post': post.to_json,
+              }
+                .i{ id: "comment-icon-#{post['id']}",
+                  style: 'pointer-events: none;',
+                  data: { controller: "comment", post: post.to_json,
+                          chat0: image_path('chat.svg'), chat1: image_path('chat-1.svg'),
+                          chat2: image_path('chat-2.svg'), chat3: image_path('chat-3.svg'),
+                          chat4: image_path('chat-4.svg'), chat5: image_path('chat-5.svg'),
+                          chat6: image_path('chat-6.svg'), chatFill: image_path('chat-fill.svg')}
                 }
-                = image_tag 'chat-4.svg'
+                  = image_tag 'chat.svg'
+                  %span{ style: 'display: none;', id: 'comments_cnt' }= post['comments_count']
               -# いいね
-              .col-1
+              .col-1.m-1
                 - if user_signed_in? && current_user.id != post['user_id']
-                  .i{
-                    'data-controller': 'like',
+                  .i{'data-controller': 'like',
                     'data-post': post.to_json,
                     'data-action': 'click->like#toggleLike'
                   }
@@ -83,14 +84,14 @@
                 - else
                   .bi.bi-heart
               -# いいね数
-              .col-2{id: "likes-count-#{post['id']}", 
+              .col-1.m-1{id: "likes-count-#{post['id']}", 
                       'data-bs-toggle': 'modal',
                       'data-bs-target': '#likersModal',
                       'data-controller': 'modal',
                       'data-action': 'click->modal#showLikers',
                       'data-post': post.to_json,
                       'data-my-id': current_user&.id,
-                    }
+              }
                 = post['likes_count']
     .end-of-data.posts_card.border-0
       .card-body.d-flex.flex-row.justify-content-center
@@ -105,8 +106,7 @@
     = link_to 'ログアウト', destroy_user_session_path,
               data: { turbo_method: :delete },
               class: 'btn btn-outline-secondary'
-    %button.btn.btn-primary{
-      'data-bs-toggle': 'modal',
+    %button.btn.btn-primary{'data-bs-toggle': 'modal',
       'data-bs-target': '#newModal'
     } 新規投稿
 
@@ -144,8 +144,8 @@
     .modal-content
       = render 'post_content'
       .modal-header
-        %modal-title.fs-5{ id: 'userModalLabel' }
-          この投稿のユーザー情報
+        %h1.modal-title.fs-5{ id: 'userModalLabel' }
+          ユーザー情報
         %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }
       .modal-body
         .container-fluid
@@ -166,8 +166,7 @@
               = link_to 'user-blog-url-link', '#', class: 'blog-link'
           - if user_signed_in?
             .m-4.d-flex.justify-content-end
-              %button.btn.toggleFollow{
-                'data-controller': 'follow',
+              %button.btn.toggleFollow{'data-controller': 'follow',
                 'data-action': 'click->follow#toggleFollow',
               }
 -# Likersモーダル ---------------------------------------------------------------
@@ -176,7 +175,7 @@
     .modal-content
       = render 'post_content'
       .modal-header 
-        %h1.modal-title.fs-5{ id: 'likersModalLabel' } この投稿にいいねしたユーザー
+        %h1.modal-title.fs-5{ id: 'likersModalLabel' } この投稿へのいいね
         %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }
       .modal-body
         %ul{id: 'likersList'}
@@ -190,8 +189,7 @@
           = form_with(local: true, class: 'mb-4') do |form|
             = form.text_area :content, class: 'form-control', maxlength: 140, placeholder: 'コメントを入力してください', required: true
             .actions.mt-3.d-flex.justify-content-end.gap-5
-              %button.btn.btn-primary.addComment{
-                'data-controller': 'comment',
+              %button.btn.btn-primary.addComment{ 'data-controller': 'comment',
                 'data-action': 'click->comment#addComment',
               } コメント
             %hr

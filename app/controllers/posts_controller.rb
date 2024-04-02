@@ -120,6 +120,7 @@ class PostsController < ApplicationController
     post.as_json.merge(
       'username' => user.username.to_s,
       'user_id' => user.id,
+      'comments_count' => post.comments_count,
       'likes_count' => post.likes_count,
       'is_liked' => liked_posts.include?(post.id),
       'is_followed' => current_user&.following?(user),
