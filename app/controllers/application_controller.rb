@@ -6,7 +6,8 @@ class ApplicationController < ActionController::Base
 
   # devise(ユーザー認証)に関するストロングパラメーターの設定
   def configure_permitted_parameters
-    devise_parameter_sanitizer.permit(:sign_up, keys: [:username])
+    devise_parameter_sanitizer.permit(:sign_up, keys: %i[username email])
+    devise_parameter_sanitizer.permit(:account_update, keys: %i[username email])
   end
 
   private

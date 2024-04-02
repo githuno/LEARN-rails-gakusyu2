@@ -2,6 +2,8 @@ class User < ApplicationRecord
   # バリデーション（アルファベットのみ、スペース禁止、20文字以内）
   validates :username, presence: true, length: { maximum: 20 },
                        format: { with: /\A[a-zA-Z]*\z/, message: 'only allows letters' }
+  validates :email, presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+
   # ポスト機能 ----------------------------------------------------------------
   # ユーザーは複数のPostを持ち、ユーザーが削除されたらpostも削除
   has_many :posts, dependent: :destroy
@@ -64,10 +66,10 @@ class User < ApplicationRecord
   end
 
   def email_changed?
-    false
+    true
   end
 
   def will_save_change_to_email?
-    false
+    true
   end
 end

@@ -7,6 +7,10 @@
     %br/
     = f.text_field :username, autofocus: true, autocomplete: 'username'
   .field
+    = f.label :email
+    %br/
+    = f.email_field :email, autocomplete: 'email'
+  .field
     = f.label :password
     %i (leave blank if you don't want to change it)
     %br/

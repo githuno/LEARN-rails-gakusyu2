@@ -52,7 +52,7 @@ RSpec.describe User do
   # フォロー機能
   describe 'フォロー機能' do
     let(:user) { create(:user) }
-    let(:other_user) { create(:user, username: 'otheruser') }
+    let(:other_user) { create(:random_user) }
 
     it 'ユーザーをフォローすること' do
       user.follow(other_user)
