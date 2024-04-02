@@ -1,0 +1,21 @@
+%div.alert.alert-info
+  %p= @greeting
+%div.alert.alert-success
+  %h3 新しいコメントが投稿されました：
+  %strong
+  = preserve @comment.content
+  %p
+  %p
+    %strong コメントしたユーザー：
+    %br
+    = @comment.user.username
+  %p
+    %strong コメントされた日時：
+    %br
+    = @comment.created_at.in_time_zone('Tokyo').strftime('%Y年%m月%d日 %H時%M分')
+  %p
+    %strong コメントされた投稿：
+    %br
+    = preserve @comment.post.content
+  %p 詳しくはこちら：#{link_to @app_link, @app_link}
+  

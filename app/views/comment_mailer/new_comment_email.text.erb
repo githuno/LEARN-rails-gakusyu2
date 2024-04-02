@@ -1,0 +1,17 @@
+<%= @greeting %>
+
+新しいコメントが投稿されました：
+
+コメント内容：
+<%= @comment.content %>
+
+コメントしたユーザー：
+<%= @comment.user.username %>
+
+コメントされた日時：
+<%= @comment.created_at.in_time_zone('Tokyo').strftime('%Y年%m月%d日 %H時%M分') %>
+
+コメントされた投稿：
+<%= @comment.post.content %>
+
+詳しくはこちら：<%= @app_link %>
