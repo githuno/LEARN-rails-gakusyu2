@@ -2,6 +2,7 @@
 10.times do
   User.create!(
     username: Faker::Internet.unique.username(specifier: 5..20, separators: []),
+    email: Faker::Internet.unique.email,
     password: 'password',
     password_confirmation: 'password',
     profile: Faker::Lorem.sentence(word_count: 10),
