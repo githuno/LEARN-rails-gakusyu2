@@ -30,8 +30,8 @@
           .top-content
             %p.h5.card-title
               = post['content']
-            = image_tag post['images'][0], class: 'card-img-top' if post['images'][0].present?
-            -# = image_tag post['images'][1], class: 'card-img-top' if post['images'][1].present?
+            -# = cl_image_tag(post['images'][0], class: 'card-img-top', width: 100, height: 100, crop: :fill) if post['images'][0].present?
+            -# = image_tag post['images'][0], class: 'card-img-top' if post['images'][0].present?
             %p.card-text
               = post['updated_at']
           .bottom-content
