@@ -55,9 +55,9 @@ class PostsController < ApplicationController
   def create
     @post = current_user.posts.build(post_params)
     if @post.save
-      redirect_back(fallback_location: root_path, notice: '投稿しました。')
+      redirect_back(fallback_location: root_path, notice: '投稿しました')
     else
-      redirect_back(fallback_location: root_path, alert: '投稿に失敗しました。')
+      redirect_back(fallback_location: root_path, alert: '投稿に失敗しました')
     end
   end
 
@@ -69,16 +69,16 @@ class PostsController < ApplicationController
   def update
     @post = current_user.posts.find(params[:id])
     if @post.update(post_params)
-      redirect_back(fallback_location: root_path, notice: '更新しました。')
+      redirect_back(fallback_location: root_path, notice: '更新しました')
     else
-      redirect_back(fallback_location: root_path, alert: '更新に失敗しました。')
+      redirect_back(fallback_location: root_path, alert: '更新に失敗しました')
     end
   end
 
   def destroy
     @post = current_user.posts.find(params[:id])
     @post.destroy
-    redirect_back(fallback_location: root_path, notice: '削除しました。')
+    redirect_back(fallback_location: root_path, notice: '削除しました')
   end
 
   # いいね機能 ------------------------------------------------------------------
@@ -125,8 +125,8 @@ class PostsController < ApplicationController
       # 日本時間のyyyy/mm/dd hh:mm形式に変換
       'updated_at' => post.updated_at.in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M'),
       'id' => post.id.to_s, # idを文字列に変換
-      'images' => post.images.map { |image| url_for(image) }
-      # 'images' => post.images.map(&:key)
+      # 'images' => post.images.map { |image| url_for(image) }
+      'images' => post.images.map(&:key)
     )
   end
 end
