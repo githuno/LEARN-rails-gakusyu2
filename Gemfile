@@ -4,8 +4,10 @@ ruby '3.2.3'
 
 # ADDITIONAL GEMS
 gem 'activerecord-cockroachdb-adapter', '~> 7.0.0'
+gem 'activestorage-cloudinary-service'
 gem 'active_storage_validations', '0.9.8'
 gem 'bootstrap', '~> 5.3.2'
+gem 'cloudinary'
 gem 'devise'
 gem 'dotenv-rails'
 gem 'faker'

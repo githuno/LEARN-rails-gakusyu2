@@ -126,6 +126,7 @@ class PostsController < ApplicationController
       'updated_at' => post.updated_at.in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M'),
       'id' => post.id.to_s, # idを文字列に変換
       'images' => post.images.map { |image| url_for(image) }
+      # 'images' => post.images.map(&:key)
     )
   end
 end
