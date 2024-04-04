@@ -2,21 +2,21 @@ class PostsController < ApplicationController
   before_action :authenticate_user!, only: %i[new create edit update destroy followings]
 
   def index
-    posts = Post.includes(:images_attachments).latest.limit(10)
+    posts = Post.includes(images_attachments: :blob).latest.limit(10)
     @posts = decorate(posts)
     @post = Post.new
     render :timeline
   end
 
   def idx_followings
-    posts = current_user.following_posts.includes(:images_attachments).latest.limit(10)
+    posts = current_user.following_posts.includes(images_attachments: :blob).latest.limit(10)
     @posts = decorate(posts)
     @post = Post.new
     render :timeline
   end
 
   def idx_likes
-    posts = current_user.liked_posts.includes(:images_attachments).latest.limit(10)
+    posts = current_user.liked_posts.includes(images_attachments: :blob).latest.limit(10)
     @posts = decorate(posts)
     @post = Post.new
     render :timeline
@@ -24,7 +24,7 @@ class PostsController < ApplicationController
 
   def idx_user
     @user = User.find(params[:id])
-    @posts = decorate(@user.posts.includes(:images_attachments).latest.limit(10))
+    @posts = decorate(@user.posts.includes(images_attachments: :blob).latest.limit(10))
     @post = Post.new
     render :timeline
   end

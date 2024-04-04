@@ -30,7 +30,8 @@
           .top-content
             %p.h5.card-title
               = post['content']
-            = image_tag post['images'][0], class: 'card-img-top' if post['images'].present?
+            = image_tag post['images'][0], class: 'card-img-top' if post['images'][0].present?
+            -# = image_tag post['images'][1], class: 'card-img-top' if post['images'][1].present?
             %p.card-text
               = post['updated_at']
           .bottom-content
@@ -107,9 +108,10 @@
     = link_to 'ログアウト', destroy_user_session_path,
               data: { turbo_method: :delete },
               class: 'btn btn-outline-secondary'
-    %button.btn.btn-primary{'data-bs-toggle': 'modal',
-      'data-bs-target': '#newModal'
-    } 新規投稿
+    %button.btn.btn-primary{ data: {
+       bs_toggle: 'modal', bs_target: '#newModal',
+       controller: 'modal', action: 'click->modal#newPost' 
+    } } 新規投稿
 
 -# 新規投稿モーダル -------------------------------------------------------------
 .modal.fade{ id: 'newModal', tabindex: '-1', 'aria-hidden': 'true' }
@@ -120,11 +122,18 @@
         %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }
       .modal-body
         = form_with(model: @post, local: true, class: 'mb-4', html: { multipart: true }) do |form|
-          = form.text_area :content, class: 'form-control', maxlength: 140
+          = form.label :content, 'テキスト'
+          = form.text_area :content, class: 'form-control', maxlength: 140, id: 'textInput' # テキスト入力フィールドにidを追加
           = form.label :images, '画像'
-          = form.file_field :images, multiple: true, class: 'form-control'
+          .row
+            - 4.times do |i|
+              .col-6.upload-area.border.border-3.border-dashed.d-flex.justify-content-center.align-items-center.text-center{ style: 'height: 100px;', id: "upload-area-#{i}", class: i.zero? ? '' : 'd-none' }
+                = form.file_field :images, multiple: true, class: 'file-input', style: 'display: none;', data: { index: i }, accept: 'image/jpeg,image/gif,image/png'
+                .upload-instructions
+                  %p ＋
           .actions.mt-3.d-flex.justify-content-end.gap-5
-            = form.submit '投稿', class: 'btn btn-primary'
+            = form.submit '投稿', class: 'btn btn-primary', id: 'submitButton' # submitボタンにidを追加
+          %p#errorElement.text-danger.mt-2
 -# 投稿編集モーダル -------------------------------------------------------------
 .modal.fade{ id: 'editModal', tabindex: '-1', 'aria-hidden': 'true' }
   .modal-dialog

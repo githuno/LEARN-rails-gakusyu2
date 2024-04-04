@@ -9,6 +9,80 @@ class ModalController extends Controller {
     contentElement.textContent = post.content;
     dateElement.textContent = post.updated_at;
   }
+  // 新規投稿モーダル -----------------------------------------------------------
+  newPost(event) {
+    // 画像アップローダーの初期化
+    const uploadAreas = document.querySelectorAll(".upload-area");
+    const fileInputs = document.querySelectorAll(".file-input");
+    const textInput = document.querySelector("#textInput"); // テキスト入力フィールドを取得
+    const submitButton = document.querySelector("#submitButton"); // submitボタンを取得
+    const errorElement = document.querySelector("#errorElement"); // エラーメッセージを表示する要素を取得
+
+    uploadAreas.forEach((uploadArea, index) => {
+      const fileInput = fileInputs[index];
+
+      if (uploadArea && fileInput) {
+        console.log("uploadArea and fileInput found");
+        uploadArea.addEventListener("click", () => {
+          fileInput.click();
+        });
+
+        ["dragover", "dragleave", "drop"].forEach((eventName) => {
+          uploadArea.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          });
+        });
+
+        uploadArea.addEventListener("drop", (e) => {
+          const files = e.dataTransfer.files;
+          fileInput.files = files;
+        });
+
+        fileInput.addEventListener('change', () => {
+          // ファイルが選択されたらuploadAreaにサムネイルを表示
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            uploadArea.style.backgroundImage = `url(${e.target.result})`;
+            uploadArea.style.backgroundSize = 'cover'; // 追加
+            uploadArea.style.backgroundPosition = 'center'; // 追加
+          };
+          // 画像サイズが5MBを超えていたらエラーメッセージを表示
+          if (fileInput.files[0].size > 5 * 1024 * 1024) {
+            errorElement.textContent = "画像サイズが大きすぎます。5MB以下の画像を選択してください。";
+            fileInput.value = ""; // ファイル選択をクリア
+            submitButton.disabled = true; // submitボタンを無効化
+            return;
+          } else {
+            errorElement.textContent = ""; // エラーメッセージをクリア
+            submitButton.disabled = false; // submitボタンを有効化
+          }
+          reader.readAsDataURL(fileInput.files[0]);
+        
+          // ファイルが選択されたら次のアップロードエリアを表示
+          if (index < 3) {
+            const nextUploadArea = document.getElementById(`upload-area-${index + 1}`);
+            nextUploadArea.classList.remove('d-none');
+          }
+        });
+      } else {
+        console.error("uploadArea or fileInput not found");
+      }
+    });
+
+    const validateTextInput = () => {
+      if (textInput.value.length < 1 || textInput.value.length > 140) {
+        errorElement.textContent = "テキストは1文字以上140字以下で入力してください。";
+        submitButton.disabled = true; // submitボタンを無効化
+      } else {
+        errorElement.textContent = ""; // エラーメッセージをクリア
+        submitButton.disabled = false; // submitボタンを有効化
+      }
+    };
+  
+    textInput.addEventListener('input', validateTextInput);
+    validateTextInput(); // ページ読み込み時にもバリデーションチェックを行う
+  }
   // 投稿編集モーダル -----------------------------------------------------------
   editPost(event) {
     console.log("editPost");
@@ -63,15 +137,11 @@ class ModalController extends Controller {
     fetch(`/users/${post.user_id}/show_json`)
       .then((response) => response.json())
       .then((user) => {
-        const userNameField = document.querySelector(
-          "#userModal .name"
-        );
+        const userNameField = document.querySelector("#userModal .name");
         const userProfileField = document.querySelector(
           "#userModal .profile-content"
         );
-        const userBlogUrlLink = document.querySelector(
-          "#userModal .blog-link"
-        );
+        const userBlogUrlLink = document.querySelector("#userModal .blog-link");
         userNameField.textContent = user.username; // ヘッダータイトルにユーザー名をセット
         userProfileField.textContent = user.profile; // プロフィール内容をセット
         if (userBlogUrlLink) {
