@@ -30,6 +30,7 @@
           .top-content
             %p.h5.card-title
               = post['content']
+            = image_tag post['images'][0], class: 'card-img-top' if post['images'].present?
             %p.card-text
               = post['updated_at']
           .bottom-content
@@ -118,8 +119,10 @@
         %h1.modal-title.fs-5{ id: 'postModalLabel' } 新規投稿
         %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }
       .modal-body
-        = form_with(model: @post, local: true, class: 'mb-4') do |form|
+        = form_with(model: @post, local: true, class: 'mb-4', html: { multipart: true }) do |form|
           = form.text_area :content, class: 'form-control', maxlength: 140
+          = form.label :images, '画像'
+          = form.file_field :images, multiple: true, class: 'form-control'
           .actions.mt-3.d-flex.justify-content-end.gap-5
             = form.submit '投稿', class: 'btn btn-primary'
 -# 投稿編集モーダル -------------------------------------------------------------

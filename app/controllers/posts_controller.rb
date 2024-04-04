@@ -2,21 +2,21 @@ class PostsController < ApplicationController
   before_action :authenticate_user!, only: %i[new create edit update destroy followings]
 
   def index
-    posts = Post.latest.limit(10)
+    posts = Post.includes(:images_attachments).latest.limit(10)
     @posts = decorate(posts)
     @post = Post.new
     render :timeline
   end
 
   def idx_followings
-    posts = current_user.following_posts.latest.limit(10)
+    posts = current_user.following_posts.includes(:images_attachments).latest.limit(10)
     @posts = decorate(posts)
     @post = Post.new
     render :timeline
   end
 
   def idx_likes
-    posts = current_user.liked_posts.latest.limit(10)
+    posts = current_user.liked_posts.includes(:images_attachments).latest.limit(10)
     @posts = decorate(posts)
     @post = Post.new
     render :timeline
@@ -24,7 +24,7 @@ class PostsController < ApplicationController
 
   def idx_user
     @user = User.find(params[:id])
-    @posts = decorate(@user.posts.latest.limit(10))
+    @posts = decorate(@user.posts.includes(:images_attachments).latest.limit(10))
     @post = Post.new
     render :timeline
   end
@@ -101,7 +101,7 @@ class PostsController < ApplicationController
   private
 
   def post_params
-    params.require(:post).permit(:content)
+    params.require(:post).permit(:content, images: [])
   end
 
   def decorate(posts)
@@ -124,7 +124,8 @@ class PostsController < ApplicationController
       'is_followed' => current_user&.following?(user),
       # 日本時間のyyyy/mm/dd hh:mm形式に変換
       'updated_at' => post.updated_at.in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M'),
-      'id' => post.id.to_s # idを文字列に変換
+      'id' => post.id.to_s, # idを文字列に変換
+      'images' => post.images.map { |image| url_for(image) }
     )
   end
 end

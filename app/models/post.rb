@@ -1,5 +1,6 @@
 class Post < ApplicationRecord
   validates :content, presence: true, length: { maximum: 140 }
+  validate :image_count
   belongs_to :user
 
   scope :latest, -> { order(created_at: :desc) }
@@ -39,5 +40,14 @@ class Post < ApplicationRecord
 
   def comments_count
     self[:comments_count]
+  end
+
+  # 画像投稿機能 ----------------------------------------------------------------
+  has_many_attached :images # 投稿は4枚の画像を持つ
+
+  private
+
+  def image_count
+    errors.add(:images, 'は4枚まで添付できます') if images.size > 4
   end
 end
