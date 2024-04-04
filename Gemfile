@@ -4,6 +4,7 @@ ruby '3.2.3'
 
 # ADDITIONAL GEMS
 gem 'activerecord-cockroachdb-adapter', '~> 7.0.0'
+gem 'active_storage_validations', '0.9.8'
 gem 'bootstrap', '~> 5.3.2'
 gem 'devise'
 gem 'dotenv-rails'
