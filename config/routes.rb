@@ -10,20 +10,18 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :posts, only: %i[create update destroy]
+  resources :posts, only: %i[create update destroy] do
+    member do
+      post :toggle_like
+      get :likers
+      resources :comments, only: %i[create index]
+    end
+  end
   get 'timeline', to: 'posts#index'
   get 'timeline/followings', to: 'posts#idx_followings'
   get 'timeline/user/:id', to: 'posts#idx_user', as: 'timeline_user'
   get 'timeline/likes', to: 'posts#idx_likes', as: 'timeline_likes'
   get 'posts/more', to: 'posts#more_posts', as: 'more_posts'
-  resources :posts do
-    member do
-      post :toggle_like
-      get :likers
-      # comment
-      resources :comments, only: %i[create index]
-    end
-  end
 
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
