@@ -19,6 +19,8 @@ gem 'net-pop'
 gem 'net-smtp'
 gem 'rack-cors'
 gem 'sassc-rails'
+gem 'sendgrid-actionmailer'
+gem 'sendgrid-ruby'
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem 'rails', '~> 7.0.4', '>= 7.0.4.3'
