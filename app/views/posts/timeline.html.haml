@@ -30,22 +30,28 @@
           .top-content
             %p.h5.card-title
               = post['content']
-            = cl_image_tag(post['images'][0], class: 'card-img-top', width: 50, height: 100, crop: :scale) if post['images'][0].present?
-            -# = image_tag post['images'][0], class: 'card-img-top' if post['images'][0].present?
-            %p.card-text
-              = post['updated_at']
+            .d-flex.justify-content-center.align-items-center.position-relative.mx-auto
+              - if post['images'].present?
+                = cl_image_tag(post['images'][0], height: 100, crop: :scale)
+                .position-absolute{ style: 'top: 10px; left: 10px; z-index: -1;' }
+                  = cl_image_tag(post['images'][1], height: 100, crop: :scale)
+                .position-absolute{ style: 'top: 10px; right: 10px; z-index: -2;' }
+                  = cl_image_tag(post['images'][2], height: 100, crop: :scale)
+                .position-absolute{ style: 'top: 20px; z-index: -3;' }
+                  = cl_image_tag(post['images'][3], height: 100, crop: :scale)
+          %p.card-text.mt-auto.mb-0
+            = post['updated_at']
           .bottom-content
             %hr
             .row
               -# 編集 or ユーザー名
               .col-7
                 - if current_user && current_user.id == post['user_id']
-                  .bi.bi-pencil-square{'data-bs-toggle': 'modal',
-                    'data-bs-target': '#editModal',
-                    'data-controller': 'modal',
-                    'data-action': 'click->modal#editPost',
-                    'data-post': post.to_json,
-                  }
+                  .bi.bi-pencil-square{ data: { 
+                    bs_toggle: 'modal', bs_target: '#editModal',
+                    controller: 'modal', action: 'click->modal#editPost',
+                    cloud: ENV['CLOUDINARY_NAME'], post: post.to_json,
+                  } }
                 - else
                   %button.btn.btn-outline-secondary{'data-bs-toggle': 'modal',
                     'data-bs-target': '#userModal',
@@ -144,9 +150,23 @@
       .modal-body
         = form_with(model: @post, local: true, class: 'mb-4') do |form|
           = form.text_area :content, class: 'form-control', maxlength: 140
+          .carousel.slide{ id: 'carouselExampleIndicators', 'data-bs-ride': 'carousel' }
+            .carousel-indicators
+              - @post.images.each_with_index do |image, index|
+                %button{ type: 'button', 'data-bs-target': '#carouselExampleIndicators', 'data-bs-slide-to': index, class: index.zero? ? 'active' : '' }
+            .carousel-inner
+              - @post.images.each_with_index do |image, index|
+                .carousel-item{ class: index.zero? ? 'active' : '' }
+                  = cl_image_tag(image, class: 'd-block w-100')
+            %button.carousel-control-prev{ type: 'button', 'data-bs-target': '#carouselExampleIndicators', 'data-bs-slide': 'prev' }
+              %span.carousel-control-prev-icon{ 'aria-hidden': 'true' }
+              %span.visually-hidden Previous
+            %button.carousel-control-next{ type: 'button', 'data-bs-target': '#carouselExampleIndicators', 'data-bs-slide': 'next' }
+              %span.carousel-control-next-icon{ 'aria-hidden': 'true' }
+              %span.visually-hidden Next
           %p.updated-at 最終更新日時:
           .actions.mt-3.d-flex.justify-content-end.gap-5
-            = link_to '削除', '#',
+            = link_to 'ポストごと削除', '#',
                       data: { turbo_method: :delete },
                       class: 'btn btn-danger'
             = form.submit '更新', class: 'btn btn-primary'

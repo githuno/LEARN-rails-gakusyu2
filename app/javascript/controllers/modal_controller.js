@@ -39,17 +39,18 @@ class ModalController extends Controller {
           fileInput.files = files;
         });
 
-        fileInput.addEventListener('change', () => {
+        fileInput.addEventListener("change", () => {
           // ファイルが選択されたらuploadAreaにサムネイルを表示
           const reader = new FileReader();
           reader.onload = (e) => {
             uploadArea.style.backgroundImage = `url(${e.target.result})`;
-            uploadArea.style.backgroundSize = 'cover'; // 追加
-            uploadArea.style.backgroundPosition = 'center'; // 追加
+            uploadArea.style.backgroundSize = "cover"; // 追加
+            uploadArea.style.backgroundPosition = "center"; // 追加
           };
           // 画像サイズが5MBを超えていたらエラーメッセージを表示
           if (fileInput.files[0].size > 5 * 1024 * 1024) {
-            errorElement.textContent = "画像サイズが大きすぎます。5MB以下の画像を選択してください。";
+            errorElement.textContent =
+              "画像サイズが大きすぎます。5MB以下の画像を選択してください。";
             fileInput.value = ""; // ファイル選択をクリア
             submitButton.disabled = true; // submitボタンを無効化
             return;
@@ -58,11 +59,13 @@ class ModalController extends Controller {
             submitButton.disabled = false; // submitボタンを有効化
           }
           reader.readAsDataURL(fileInput.files[0]);
-        
+
           // ファイルが選択されたら次のアップロードエリアを表示
           if (index < 3) {
-            const nextUploadArea = document.getElementById(`upload-area-${index + 1}`);
-            nextUploadArea.classList.remove('d-none');
+            const nextUploadArea = document.getElementById(
+              `upload-area-${index + 1}`
+            );
+            nextUploadArea.classList.remove("d-none");
           }
         });
       } else {
@@ -72,32 +75,92 @@ class ModalController extends Controller {
 
     const validateTextInput = () => {
       if (textInput.value.length < 1 || textInput.value.length > 140) {
-        errorElement.textContent = "テキストは1文字以上140字以下で入力してください。";
+        errorElement.textContent =
+          "テキストは1文字以上140字以下で入力してください。";
         submitButton.disabled = true; // submitボタンを無効化
       } else {
         errorElement.textContent = ""; // エラーメッセージをクリア
         submitButton.disabled = false; // submitボタンを有効化
       }
     };
-  
-    textInput.addEventListener('input', validateTextInput);
+
+    textInput.addEventListener("input", validateTextInput);
     validateTextInput(); // ページ読み込み時にもバリデーションチェックを行う
   }
   // 投稿編集モーダル -----------------------------------------------------------
   editPost(event) {
     console.log("editPost");
     const post = JSON.parse(event.target.dataset.post);
-
     const form = document.querySelector("#editModal form");
     const textArea = form.querySelector("textarea");
     const updatedAtField = document.querySelector("#editModal .updated-at");
     const deleteLink = document.querySelector("#editModal .btn-danger");
+    const carouselInner = document.querySelector(
+      "#carouselExampleIndicators .carousel-inner"
+    ); // カルーセルの内部要素を取得
 
     form.setAttribute("action", "/posts/" + post.id); // フォームのアクションを編集のURLに変更
     form.setAttribute("method", "patch"); // フォームのメソッドをPATCHに変更
     textArea.value = post.content; // テキストエリアの内容を投稿の内容に変更
     updatedAtField.textContent = "最終更新日時: " + post.updated_at; // 最終更新日時を設定
     deleteLink.href = "/posts/" + post.id; // 削除リンクのhref属性を設定
+
+    // カルーセルのスライドとインジケータをクリア
+    const carouselIndicators = document.querySelector(
+      "#carouselExampleIndicators .carousel-indicators"
+    );
+    while (carouselInner.firstChild) {
+      carouselInner.removeChild(carouselInner.firstChild);
+      carouselIndicators.removeChild(carouselIndicators.firstChild);
+    }
+
+    // フェッチした画像データをカルーセルにセット
+    post.images.forEach((imageKey, index) => {
+      // CloudinaryのURLを作成
+      const cloudinaryName = event.target.dataset.cloud;
+      const imageUrl = `https://res.cloudinary.com/${cloudinaryName}/image/upload/${imageKey}`;
+
+      // 画像をフェッチ
+      fetch(imageUrl)
+        .then((response) => response.blob())
+        .then((blob) => {
+          const url = URL.createObjectURL(blob);
+
+          // カルーセルアイテムを作成
+          const carouselItem = document.createElement("div");
+          carouselItem.classList.add("carousel-item");
+          if (index === 0) {
+            carouselItem.classList.add("active");
+          }
+
+          // // 削除ボタンを作成
+          // const deleteButton = document.createElement("button");
+          // deleteButton.type = "button";
+          // deleteButton.classList.add("btn", "btn-danger", "delete-image");
+          // deleteButton.textContent = "☓";
+          // deleteButton.dataset.imageKey = imageKey;
+          // carouselItem.appendChild(deleteButton);
+
+
+          const img = document.createElement("img");
+          img.src = url;
+          img.classList.add("d-block", "w-100");
+
+          carouselItem.appendChild(img);
+          carouselInner.appendChild(carouselItem);
+
+          // カルーセルインジケータを作成
+          const indicator = document.createElement("button");
+          indicator.type = "button";
+          indicator.dataset.bsTarget = "#carouselExampleIndicators";
+          indicator.dataset.bsSlideTo = index;
+          if (index === 0) {
+            indicator.classList.add("active");
+          }
+
+          carouselIndicators.appendChild(indicator);
+        });
+    });
   }
   // コメントモーダル -----------------------------------------------------------
   showComments(event) {
