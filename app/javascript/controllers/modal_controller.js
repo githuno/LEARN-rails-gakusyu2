@@ -94,7 +94,7 @@ class ModalController extends Controller {
     const form = document.querySelector("#editModal form");
     const textArea = form.querySelector("textarea");
     const updatedAtField = document.querySelector("#editModal .updated-at");
-    const deleteLink = document.querySelector("#editModal .btn-danger");
+    const deleteLink = document.querySelector("#editModal .btn-outline-danger");
     const carouselInner = document.querySelector(
       "#carouselExampleIndicators .carousel-inner"
     ); // カルーセルの内部要素を取得
@@ -111,6 +111,8 @@ class ModalController extends Controller {
     );
     while (carouselInner.firstChild) {
       carouselInner.removeChild(carouselInner.firstChild);
+    }
+    while (carouselIndicators.firstChild) {
       carouselIndicators.removeChild(carouselIndicators.firstChild);
     }
 
@@ -128,20 +130,65 @@ class ModalController extends Controller {
 
           // カルーセルアイテムを作成
           const carouselItem = document.createElement("div");
-          carouselItem.classList.add("carousel-item");
+          carouselItem.classList.add("carousel-item", `image-${imageKey}`);
+          carouselItem.style.position = "relative"; // 追加
           if (index === 0) {
             carouselItem.classList.add("active");
           }
 
-          // // 削除ボタンを作成
-          // const deleteButton = document.createElement("button");
-          // deleteButton.type = "button";
-          // deleteButton.classList.add("btn", "btn-danger", "delete-image");
-          // deleteButton.textContent = "☓";
-          // deleteButton.dataset.imageKey = imageKey;
-          // carouselItem.appendChild(deleteButton);
+          // 画像削除用のBootstrapアイコンを作成
+          const icon = document.createElement("i");
+          icon.classList.add("bi", "bi-x", "delete-image");
+          icon.style.opacity = "0.5";
+          icon.style.position = "absolute";
+          icon.style.top = "10px";
+          icon.style.left = "50%";
+          icon.style.transform = "translateX(-50%)";
+          icon.style.fontSize = "30px";
+          icon.style.color = "white";
+          icon.style.backgroundColor = "red";
+          icon.style.borderRadius = "20%";
+          carouselItem.appendChild(icon);
 
+          // 画像削除アイコンをクリックしたときのイベントリスナーを追加
+          icon.addEventListener(
+            "click",
+            ((imageKey) => {
+              return (event) => {
+                const deleteInput = document.querySelector(
+                  `input[value="${imageKey}"]`
+                );
+                if (deleteInput) {
+                  // input要素が存在することを確認
+                  deleteInput.checked = true;
+                }
+                // 該当imageKeyのcarouselitemを削除
+                const targetCarouselItem = document.querySelector(
+                  `.carousel-item.image-${imageKey}`
+                );
+                if (targetCarouselItem) {
+                  // 次のアイテムへ
+                  const nextItem = targetCarouselItem.nextElementSibling;
+                  const prevItem = targetCarouselItem.previousElementSibling;
+                  if (nextItem) {
+                    nextItem.classList.add("active");
+                  } else if (prevItem) {
+                    prevItem.classList.add("active");
+                  }
+                  targetCarouselItem.remove();
+                }
+                // インジケーターのアイテム数も削減
+                const targetIndicator = document.querySelector(
+                  `button[data-bs-slide-to="${index}"]`
+                );
+                if (targetIndicator) {
+                  targetIndicator.remove();
+                }
+              };
+            })(imageKey)
+          );
 
+          // 画像を作成
           const img = document.createElement("img");
           img.src = url;
           img.classList.add("d-block", "w-100");
