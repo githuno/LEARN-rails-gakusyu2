@@ -165,10 +165,10 @@
               %span.carousel-control-next-icon{ 'aria-hidden': 'true' }
               %span.visually-hidden Next
           %p.updated-at 最終更新日時:
-          .actions.mt-3.d-flex.justify-content-end.gap-5
-            = link_to 'ポストごと削除', '#',
+          .actions.mt-3.d-flex.justify-content-between.gap-5
+            = link_to 'ポストを削除', '#',
                       data: { turbo_method: :delete },
-                      class: 'btn btn-danger'
+                      class: 'btn btn-outline-danger'
             = form.submit '更新', class: 'btn btn-primary'
 -# ユーザーモーダル -------------------------------------------------------------
 .modal.fade{ id: 'userModal', tabindex: '-1', 'aria-hidden': 'true' }
