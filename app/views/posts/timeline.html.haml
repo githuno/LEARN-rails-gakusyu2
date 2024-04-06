@@ -136,7 +136,7 @@
               .col-6.upload-area.border.border-3.border-dashed.d-flex.justify-content-center.align-items-center.text-center{ style: 'height: 100px;', id: "upload-area-#{i}", class: i.zero? ? '' : 'd-none' }
                 = form.file_field :images, multiple: true, class: 'file-input', style: 'display: none;', data: { index: i }, accept: 'image/jpeg,image/gif,image/png'
                 .upload-instructions
-                  %p ＋
+                  .bi.bi-plus-circle-dotted{ style: 'font-size: 2rem;' }
           .actions.mt-3.d-flex.justify-content-end.gap-5
             = form.submit '投稿', class: 'btn btn-primary', id: 'submitButton' # submitボタンにidを追加
           %p#errorElement.text-danger.mt-2
@@ -149,19 +149,23 @@
         %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }
       .modal-body
         = form_with(model: @post, local: true, class: 'mb-4') do |form|
-          = form.text_area :content, class: 'form-control', maxlength: 140
-          .carousel.slide{ id: 'carouselExampleIndicators', 'data-bs-ride': 'carousel' }
+          = form.text_area :content, class: 'form-control', maxlength: 140, required: true
+          -# = form.label :images, '画像を追加'
+          -# = form.file_field :images, multiple: true, style: 'display: none;'
+          -# - @post.images.each do |image|
+          -#   = form.hidden_field :images, multiple: true, value: image.filename
+          .carousel.slide{ id: 'carouselIndicators', 'data-bs-ride': 'carousel' }
             .carousel-indicators
               - @post.images.each_with_index do |image, index|
-                %button{ type: 'button', 'data-bs-target': '#carouselExampleIndicators', 'data-bs-slide-to': index, class: index.zero? ? 'active' : '' }
+                %button{ type: 'button', 'data-bs-target': '#carouselIndicators', 'data-bs-slide-to': index, class: index.zero? ? 'active' : '' }
             .carousel-inner
               - @post.images.each_with_index do |image, index|
                 .carousel-item{ class: index.zero? ? 'active' : '' }
                   = cl_image_tag(image, class: 'd-block w-100')
-            %button.carousel-control-prev{ type: 'button', 'data-bs-target': '#carouselExampleIndicators', 'data-bs-slide': 'prev' }
+            %button.carousel-control-prev{ type: 'button', 'data-bs-target': '#carouselIndicators', 'data-bs-slide': 'prev' }
               %span.carousel-control-prev-icon{ 'aria-hidden': 'true' }
               %span.visually-hidden Previous
-            %button.carousel-control-next{ type: 'button', 'data-bs-target': '#carouselExampleIndicators', 'data-bs-slide': 'next' }
+            %button.carousel-control-next{ type: 'button', 'data-bs-target': '#carouselIndicators', 'data-bs-slide': 'next' }
               %span.carousel-control-next-icon{ 'aria-hidden': 'true' }
               %span.visually-hidden Next
           %p.updated-at 最終更新日時:
