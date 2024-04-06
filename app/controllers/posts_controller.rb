@@ -1,5 +1,6 @@
 class PostsController < ApplicationController
   before_action :authenticate_user!, only: %i[new create edit update destroy followings]
+  before_action :correct_user, only: %i[update destroy]
 
   def index
     posts = Post.includes(images_attachments: :blob).latest.limit(10)
@@ -67,8 +68,13 @@ class PostsController < ApplicationController
   end
 
   def update
+    puts("⚡️params[:post][:images]: #{params[:post][:images]}") 
     @post = current_user.posts.find(params[:id])
     if @post.update(post_params)
+      # Cloudinaryのキーを使用して画像を更新
+      puts("⚡️params[:post]: #{params[:post]}") 
+      puts("⚡️params[:post][:images]: #{params[:post][:images]}") 
+      update_images(@post, params[:post][:images]) # if params[:post][:images] を削除
       redirect_back(fallback_location: root_path, notice: '更新しました')
     else
       redirect_back(fallback_location: root_path, alert: '更新に失敗しました')
@@ -76,7 +82,6 @@ class PostsController < ApplicationController
   end
 
   def destroy
-    @post = current_user.posts.find(params[:id])
     @post.destroy
     redirect_back(fallback_location: root_path, notice: '削除しました')
   end
@@ -102,6 +107,19 @@ class PostsController < ApplicationController
 
   def post_params
     params.require(:post).permit(:content, images: [])
+  end
+
+  def update_images(post, image_keys)
+    image_keys = image_keys.present? ? image_keys.split(',').reject(&:empty?) : []
+    post.images.includes(:blob).each do |image|
+      # Cloudinaryのキーが送信された画像に含まれていない場合、その画像を削除
+      image.purge unless image_keys.include?(image.key)
+    end
+  end
+
+  def correct_user
+    @post = current_user.posts.find_by(id: params[:id])
+    redirect_to root_path if @post.nil?
   end
 
   def decorate(posts)

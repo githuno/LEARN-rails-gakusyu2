@@ -96,7 +96,7 @@ class ModalController extends Controller {
     const updatedAtField = document.querySelector("#editModal .updated-at");
     const deleteLink = document.querySelector("#editModal .btn-outline-danger");
     const carouselInner = document.querySelector(
-      "#carouselExampleIndicators .carousel-inner"
+      "#carouselIndicators .carousel-inner"
     ); // カルーセルの内部要素を取得
 
     form.setAttribute("action", "/posts/" + post.id); // フォームのアクションを編集のURLに変更
@@ -107,7 +107,7 @@ class ModalController extends Controller {
 
     // カルーセルのスライドとインジケータをクリア
     const carouselIndicators = document.querySelector(
-      "#carouselExampleIndicators .carousel-indicators"
+      "#carouselIndicators .carousel-indicators"
     );
     while (carouselInner.firstChild) {
       carouselInner.removeChild(carouselInner.firstChild);
@@ -199,7 +199,7 @@ class ModalController extends Controller {
           // カルーセルインジケータを作成
           const indicator = document.createElement("button");
           indicator.type = "button";
-          indicator.dataset.bsTarget = "#carouselExampleIndicators";
+          indicator.dataset.bsTarget = "#carouselIndicators";
           indicator.dataset.bsSlideTo = index;
           if (index === 0) {
             indicator.classList.add("active");
