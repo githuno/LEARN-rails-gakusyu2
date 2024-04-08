@@ -53,6 +53,12 @@ class PostsController < ApplicationController
     render :form
   end
 
+  def show
+    post = Post.find(params[:id])
+    @post = decorate([post]).first
+    render json: @post
+  end
+
   def create
     @post = current_user.posts.build(post_params)
     if @post.save

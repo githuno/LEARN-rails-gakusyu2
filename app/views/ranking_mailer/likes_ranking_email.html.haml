@@ -12,7 +12,7 @@
           .card-body
             %strong
               = "#{post.user.username}さんによる#{post.created_at.strftime('%Y年%m月%d日 %H:%M')}の投稿"
-            = link_to '投稿を見る', post_url(post), class: 'btn btn-primary mt-2'
+            = link_to '投稿を見る', @app_link + "timeline?post=#{post.id}", class: 'btn btn-primary mt-2'
       - else
         .card.mb-3
           .card-header
@@ -21,7 +21,7 @@
           .card-body
             %p
               = "#{post.user.username}さんによる#{post.created_at.strftime('%Y年%m月%d日 %H:%M')}の投稿"
-            = link_to '投稿を見る', post_url(post), class: 'btn btn-secondary mt-2'
+            = link_to '投稿を見る', @app_link + "timeline?post=#{post.id}", class: 'btn btn-secondary mt-2'
   -# - if post.images.attached?
   -#   - post.images.each do |image|
   -#     %img{src: url_for(image), alt: '投稿画像'}

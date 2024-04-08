@@ -10,7 +10,7 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :posts, only: %i[create update destroy] do
+  resources :posts, only: %i[create update destroy show] do
     member do
       post :toggle_like
       get :likers
