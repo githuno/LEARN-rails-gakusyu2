@@ -2,76 +2,316 @@ import { Controller } from "@hotwired/stimulus";
 import FollowController from "./follow_controller";
 
 class ModalController extends Controller {
-  // 投稿内容をモーダルに表示 -----------------------------------------------------
-  fillPostContent(post, targetElement) {
-    const contentElement = targetElement.querySelector("#postContent");
-    const dateElement = targetElement.querySelector("#postUpdatedAt");
+  // モーダル内の表示パーツ ------------------------------------------------------
+
+  fillPostContent(post, targetModal) {
+    const contentElement = targetModal.querySelector("#postContent");
+    const dateElement = targetModal.querySelector("#postUpdatedAt");
     contentElement.textContent = post.content;
     dateElement.textContent = post.updated_at;
   }
-  // 新規投稿モーダル -----------------------------------------------------------
-  newPost(event) {
-    // 画像アップローダーの初期化
-    const uploadAreas = document.querySelectorAll(".upload-area");
-    const fileInputs = document.querySelectorAll(".file-input");
-    const textInput = document.querySelector("#textInput"); // テキスト入力フィールドを取得
-    const submitButton = document.querySelector("#submitButton"); // submitボタンを取得
-    const errorElement = document.querySelector("#errorElement"); // エラーメッセージを表示する要素を取得
+  setImages = (imagekeys, targetModal, templateElement) => {
+    const carouselInner = targetModal.querySelector(".carousel-inner");
+    const carouselId = targetModal.querySelector(".carousel").id;
+    if (imagekeys.length === 0) {
+      carouselInner.remove();
+      return;
+    }
+    const cloudinaryName = event.target.dataset.cloud;
+    for (let i = 0; i < imagekeys.length; i++) {
+      if (!carouselInner.children[i]) {
+        // templateElementを複製してカルーセルアイテムを追加
+        const newCarouselItem = templateElement.cloneNode(true);
+        carouselInner.appendChild(newCarouselItem);
+      }
+      const imageUrl = `https://res.cloudinary.com/${cloudinaryName}/image/upload/${imagekeys[i]}`;
+      const carouselItem = carouselInner.children[i];
+      const uploadArea = carouselItem.querySelector(".upload-area");
 
-    uploadAreas.forEach((uploadArea, index) => {
-      const fileInput = fileInputs[index];
+      // 既存のカルーセルアイテムのuploadAreaの背景にセット
+      uploadArea.style.backgroundImage = `url(${imageUrl})`;
+      uploadArea.style.backgroundSize = "cover"; // 画像を枠内に収める
+      uploadArea.style.backgroundPosition = "center"; // 画像を中央に配置
 
-      if (uploadArea && fileInput) {
-        console.log("uploadArea and fileInput found");
-        uploadArea.addEventListener("click", () => {
-          fileInput.click();
-        });
+      // .upload-instructionsを削除
+      const uploadInstructions = carouselItem.querySelector(
+        ".upload-instructions"
+      );
+      if (uploadInstructions) {
+        uploadInstructions.remove();
+      }
+    }
+    const count = imagekeys.length ? imagekeys.length - 1 : 0;
+    this.resetCarouselIndicators(count, targetModal, carouselId);
+    this.resetCarouselButtons(count, targetModal);
+  };
+  carouselErrorCatcher(targetModal) {
+    const carousel = new bootstrap.Carousel(
+      targetModal.querySelector(".carousel")
+    );
+    const carouselItems = carousel._element.querySelectorAll(".carousel-item");
 
-        ["dragover", "dragleave", "drop"].forEach((eventName) => {
-          uploadArea.addEventListener(eventName, (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          });
-        });
-
-        uploadArea.addEventListener("drop", (e) => {
-          const files = e.dataTransfer.files;
-          fileInput.files = files;
-        });
-
-        fileInput.addEventListener("change", () => {
-          // ファイルが選択されたらuploadAreaにサムネイルを表示
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            uploadArea.style.backgroundImage = `url(${e.target.result})`;
-            uploadArea.style.backgroundSize = "cover"; // 追加
-            uploadArea.style.backgroundPosition = "center"; // 追加
-          };
-          // 画像サイズが5MBを超えていたらエラーメッセージを表示
-          if (fileInput.files[0].size > 5 * 1024 * 1024) {
-            errorElement.textContent =
-              "画像サイズが大きすぎます。5MB以下の画像を選択してください。";
-            fileInput.value = ""; // ファイル選択をクリア
-            submitButton.disabled = true; // submitボタンを無効化
-            return;
-          } else {
-            errorElement.textContent = ""; // エラーメッセージをクリア
-            submitButton.disabled = false; // submitボタンを有効化
-          }
-          reader.readAsDataURL(fileInput.files[0]);
-
-          // ファイルが選択されたら次のアップロードエリアを表示
-          if (index < 3) {
-            const nextUploadArea = document.getElementById(
-              `upload-area-${index + 1}`
-            );
-            nextUploadArea.classList.remove("d-none");
-          }
-        });
-      } else {
-        console.error("uploadArea or fileInput not found");
+    // イベントリスナーの設定
+    carousel._element.addEventListener("slide.bs.carousel", () => {
+      try {
+        const currentIndex = Array.from(carouselItems).indexOf(
+          targetModal.querySelector(".carousel-item.active")
+        );
+        console.log(currentIndex);
+      } catch (error) {
+        this.resetCarouselIndicators(carouselItems.length, targetModal);
       }
     });
+
+    // カルーセルの要素が変更された際にイベントリスナーを再設定
+    targetModal.addEventListener("DOMNodeInserted", () => {
+      this.carouselErrorCatcher(targetModal);
+    });
+  }
+  // 投稿詳細モーダル -----------------------------------------------------------
+  showPost(event) {
+    const modalElement = document.getElementById("postModal");
+    const carouselItem = modalElement.querySelector(".carousel-item");
+    const carouselItemTemplate = carouselItem.cloneNode(true);
+    const post = JSON.parse(event.target.dataset.post);
+
+    this.fillPostContent(post, modalElement);
+    this.setImages(post.image_keys, modalElement, carouselItemTemplate);
+    this.carouselErrorCatcher(modalElement);
+  }
+
+  resetCarouselIndicators = (count, targetModal) => {
+    const carouselId = targetModal.querySelector(".carousel").id;
+    const carouselIndicators = targetModal.querySelector(
+      ".carousel-indicators"
+    );
+    // 既存のインジケーターを全て削除
+    while (carouselIndicators.firstChild) {
+      carouselIndicators.removeChild(carouselIndicators.firstChild);
+    }
+    const newCount = count > 3 ? 3 : count; // インジケーターの最大数を4に制限
+    // 新しいインジケーターを追加
+    for (let i = 0; i <= newCount; i++) {
+      const newIndicator = document.createElement("button");
+      newIndicator.type = "button";
+      newIndicator.dataset.bsTarget = carouselId;
+      newIndicator.dataset.bsSlideTo = i;
+      if (i === 0 && newIndicator) newIndicator.classList.add("active");
+      carouselIndicators.appendChild(newIndicator);
+    }
+  };
+
+  resetCarouselButtons = (count, targetModal) => {
+    const nextButton = targetModal.querySelector("#nextButton"); // 次のボタンを取得
+    const prevButton = targetModal.querySelector("#prevButton"); // 戻るボタンを取得
+    if (!count) {
+      nextButton.style.display = "none";
+      prevButton.style.display = "none";
+    } else {
+      nextButton.style.display = "inline-block";
+      prevButton.style.display = "inline-block";
+    }
+  };
+
+  // 新規投稿モーダル -----------------------------------------------------------
+  newPost(event) {
+    let modalElement;
+    if (event.target.dataset.post) {
+      modalElement = document.getElementById("editModal");
+    } else {
+      modalElement = document.getElementById("newModal");
+    }
+    const textInput = modalElement.querySelector("#textInput"); // テキスト入力フィールドを取得
+    const submitButton = modalElement.querySelector("#submitButton"); // submitボタンを取得
+    const errorElement = modalElement.querySelector("#errorElement"); // エラーメッセージを表示する要素を取得
+
+    // カルーセルアイテムのテンプレートを作成
+    const carouselItemTemplate = modalElement
+      .querySelector(".carousel-item")
+      .cloneNode(true);
+
+    const attachedFilesCnt = () => {
+      const fileInputs = modalElement.querySelectorAll(".file-input");
+      let attachedFilesCnt = 0;
+      for (let i = 0; i < 4; i++) {
+        if (fileInputs[i]) {
+          // fileInputs[i]がundefinedでないことを確認
+          attachedFilesCnt += fileInputs[i].files.length;
+        }
+      }
+      return attachedFilesCnt;
+    };
+
+    const setValidThumbnail = (fileInput, uploadArea) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        uploadArea.style.backgroundImage = `url(${e.target.result})`;
+        uploadArea.style.backgroundSize = "cover"; // 追加
+        uploadArea.style.backgroundPosition = "center"; // 追加
+      };
+      // ファイルが選択されているか、および画像サイズが5MBを超えていたらエラーメッセージを表示
+      if (
+        fileInput.files &&
+        fileInput.files[0] &&
+        fileInput.files[0].size > 5 * 1024 * 1024
+      ) {
+        errorElement.textContent =
+          "画像サイズが大きすぎます。5MB以下の画像を選択してください。";
+        fileInput.value = ""; // ファイル選択をクリア
+        submitButton.disabled = true; // submitボタンを無効化
+        return;
+      } else {
+        errorElement.textContent = ""; // エラーメッセージをクリア
+        submitButton.disabled = false; // submitボタンを有効化
+        validateTextInput(); // テキスト入力のバリデーションチェックを行う
+      }
+      if (fileInput.files && fileInput.files[0]) {
+        reader.readAsDataURL(fileInput.files[0]);
+      }
+    };
+
+    const addCarouselItem = () => {
+      const fileCount = attachedFilesCnt();
+      if (fileCount === 4) return;
+      try {
+        const carouselInner = modalElement.querySelector(".carousel-inner");
+        const newCarouselItem = carouselItemTemplate.cloneNode(true);
+        if (newCarouselItem.classList.contains("active"))
+          newCarouselItem.classList.remove("active");
+        const newUploadArea = newCarouselItem.querySelector(".upload-area");
+        const newFileField = newCarouselItem.querySelector(".file-input");
+
+        // 0~3の配列を作成
+        const indices = [0, 1, 2, 3];
+        // 既存のアイテムのインデックスを取得
+        const existingIndices = Array.from(
+          modalElement.querySelectorAll(".carousel-item")
+        ).map((item) =>
+          parseInt(item.querySelector(".file-input").dataset.index)
+        );
+        // 使用されていないインデックスを配列取得
+        const unusedIndices = indices.filter(
+          (index) => !existingIndices.includes(index)
+        );
+        // 使用されていないインデックスの最初の要素を取得
+        const newIndex = unusedIndices[0];
+        newUploadArea.id = `upload-area-${newIndex}`;
+        newFileField.dataset.index = `${newIndex}`;
+        carouselInner.appendChild(newCarouselItem);
+
+        // 追加したアイテムにイベントリスナーを設定
+        setupUploadArea(newCarouselItem);
+      } catch (error) {
+        console.log("on addCarouselItem: ", error);
+        this.resetCarouselIndicators(fileCount, modalElement);
+      }
+    };
+
+    const addDeleteIcon = (uploadArea) => {
+      const deleteIcon = document.createElement("i");
+      deleteIcon.classList.add("bi", "bi-trash");
+      deleteIcon.style.position = "absolute";
+      deleteIcon.style.top = "10px";
+      deleteIcon.style.color = "red";
+      deleteIcon.style.backgroundColor = "white";
+      deleteIcon.style.borderRadius = "50%";
+      deleteIcon.style.opacity = "0.5";
+      deleteIcon.style.width = "30px"; // 幅を設定
+      deleteIcon.style.height = "30px"; // 高さを設定
+      deleteIcon.style.fontSize = "20px"; // フォントサイズを設定
+      uploadArea.style.position = "relative";
+      uploadArea.appendChild(deleteIcon);
+      deleteIcon.addEventListener("click", (event) => {
+        event.stopPropagation(); // イベントのバブリング（親要素へのイベント伝播）を停止
+        deleteImage();
+      });
+    };
+
+    const deleteImage = () => {
+      const currentCarouselItem = modalElement.querySelector(
+        ".carousel-item.active"
+      );
+      const uploadArea = currentCarouselItem.querySelector(".upload-area");
+      uploadArea.style.backgroundImage = "";
+      uploadArea.querySelector(".file-input").value = "";
+      uploadArea.querySelector(".bi-trash")?.remove();
+
+      const carouselItems = modalElement.querySelectorAll(".carousel-item");
+      const emptyCarouselItems = Array.from(carouselItems).filter((item) => {
+        const fileInput = item.querySelector(".file-input");
+        // アクティブなアイテムは削除対象から除外
+        return item !== currentCarouselItem && fileInput && !fileInput.value;
+      });
+
+      emptyCarouselItems.forEach((item) => {
+        item.querySelector(".bi-trash")?.remove();
+        item.remove();
+      });
+
+      const count = attachedFilesCnt();
+      this.resetCarouselIndicators(count, modalElement);
+      this.resetCarouselButtons(count, modalElement);
+    };
+    let clicked = false;
+    let tempFile = null; // 一時的にファイルを保存するための変数
+
+    const onUploadAreaClick = (event, fileInput) => {
+      event.stopPropagation();
+      if (!clicked) {
+        // ファイルがセットされている場合、一時的に保存
+        if (fileInput.files.length > 0) {
+          tempFile = fileInput.files[0];
+        }
+        fileInput.click();
+        clicked = true;
+
+        // フォーカスが戻ったときにクリックフラグをリセット
+        window.addEventListener("focus", () => (clicked = false), {
+          once: true,
+        });
+      }
+    };
+
+    const setupUploadArea = (targetItem) => {
+      const uploadArea = targetItem.querySelector(".upload-area");
+      const fileInput = uploadArea.querySelector(".file-input");
+
+      // アップロードエリアのクリックでファイルインプット
+      if (uploadArea && fileInput) {
+        uploadArea.removeEventListener("click", onUploadAreaClick); // 重複登録を防ぐ
+        uploadArea.addEventListener("click", (event) =>
+          onUploadAreaClick(event, fileInput)
+        );
+      }
+
+      // ファイルインプットの変更で諸々
+      fileInput.addEventListener("change", () => {
+        // ファイルが空になった（キャンセルされた）場合、一時的に保存したファイルを再セット
+        if (fileInput.files.length === 0 && tempFile) {
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(tempFile);
+          fileInput.files = dataTransfer.files;
+          tempFile = null;
+        }
+
+        console.log("on fileInput change: ", fileInput.files);
+        setValidThumbnail(fileInput, uploadArea);
+        addDeleteIcon(uploadArea);
+        const carouselIndicators = modalElement.querySelector(
+          ".carousel-indicators"
+        );
+        const indicatorsCount = carouselIndicators.children.length;
+        if (
+          fileInput.files.length > 0 &&
+          attachedFilesCnt() + 1 > indicatorsCount
+        ) {
+          addCarouselItem();
+        }
+        const count = attachedFilesCnt();
+        this.resetCarouselIndicators(count, modalElement);
+        this.resetCarouselButtons(count + 1, modalElement);
+      });
+    };
 
     const validateTextInput = () => {
       if (textInput.value.length < 1 || textInput.value.length > 140) {
@@ -84,131 +324,60 @@ class ModalController extends Controller {
       }
     };
 
+    // textAreaにinputイベントリスナーを追加
     textInput.addEventListener("input", validateTextInput);
     validateTextInput(); // ページ読み込み時にもバリデーションチェックを行う
-  }
-  // 投稿編集モーダル -----------------------------------------------------------
-  editPost(event) {
-    console.log("editPost");
-    const post = JSON.parse(event.target.dataset.post);
-    const form = document.querySelector("#editModal form");
-    const textArea = form.querySelector("textarea");
-    const updatedAtField = document.querySelector("#editModal .updated-at");
-    const deleteLink = document.querySelector("#editModal .btn-outline-danger");
-    const carouselInner = document.querySelector(
-      "#carouselIndicators .carousel-inner"
-    ); // カルーセルの内部要素を取得
+    setupUploadArea(modalElement.querySelector(".carousel-item.active"));
 
-    form.setAttribute("action", "/posts/" + post.id); // フォームのアクションを編集のURLに変更
-    form.setAttribute("method", "patch"); // フォームのメソッドをPATCHに変更
-    textArea.value = post.content; // テキストエリアの内容を投稿の内容に変更
-    updatedAtField.textContent = "最終更新日時: " + post.updated_at; // 最終更新日時を設定
-    deleteLink.href = "/posts/" + post.id; // 削除リンクのhref属性を設定
-
-    // カルーセルのスライドとインジケータをクリア
-    const carouselIndicators = document.querySelector(
-      "#carouselIndicators .carousel-indicators"
-    );
-    while (carouselInner.firstChild) {
-      carouselInner.removeChild(carouselInner.firstChild);
-    }
-    while (carouselIndicators.firstChild) {
-      carouselIndicators.removeChild(carouselIndicators.firstChild);
-    }
-
-    // フェッチした画像データをカルーセルにセット
-    post.images.forEach((imageKey, index) => {
-      // CloudinaryのURLを作成
+    // 編集モーダルからの遷移の場合 --------------------------------------------------
+    if (event.target.dataset.post) {
+      const post = JSON.parse(event.target.dataset.post);
       const cloudinaryName = event.target.dataset.cloud;
-      const imageUrl = `https://res.cloudinary.com/${cloudinaryName}/image/upload/${imageKey}`;
+      const updatedAtField = modalElement.querySelector(".updated-at");
+      textInput.value = post.content;
+      updatedAtField.textContent = "最終更新日時: " + post.updated_at; // 最終更新日時を設定
 
-      // 画像をフェッチ
-      fetch(imageUrl)
-        .then((response) => response.blob())
-        .then((blob) => {
-          const url = URL.createObjectURL(blob);
+      const form = document.querySelector("#editModal form");
+      form.setAttribute("action", "/posts/" + post.id); // フォームのアクションを編集のURLに変更
+      form.setAttribute("method", "patch"); // フォームのメソッドをPATCHに変更
+      const deleteLink = document.querySelector(
+        "#editModal .btn-outline-danger"
+      );
+      deleteLink.href = "/posts/" + post.id; // 削除リンクのhref属性を設定
 
-          // カルーセルアイテムを作成
-          const carouselItem = document.createElement("div");
-          carouselItem.classList.add("carousel-item", `image-${imageKey}`);
-          carouselItem.style.position = "relative"; // 追加
-          if (index === 0) {
-            carouselItem.classList.add("active");
+      if (post.image_keys) {
+        post.image_keys.forEach((imageKey, index) => {
+          const imageUrl = `https://res.cloudinary.com/${cloudinaryName}/image/upload/${imageKey}`;
+          if (index < 3) {
+            addCarouselItem();
           }
-
-          // 画像削除用のBootstrapアイコンを作成
-          const icon = document.createElement("i");
-          icon.classList.add("bi", "bi-x", "delete-image");
-          icon.style.opacity = "0.5";
-          icon.style.position = "absolute";
-          icon.style.top = "10px";
-          icon.style.left = "50%";
-          icon.style.transform = "translateX(-50%)";
-          icon.style.fontSize = "30px";
-          icon.style.color = "white";
-          icon.style.backgroundColor = "red";
-          icon.style.borderRadius = "20%";
-          carouselItem.appendChild(icon);
-
-          // 画像削除アイコンをクリックしたときのイベントリスナーを追加
-          icon.addEventListener(
-            "click",
-            ((imageKey) => {
-              return (event) => {
-                const deleteInput = document.querySelector(
-                  `input[value="${imageKey}"]`
-                );
-                if (deleteInput) {
-                  // input要素が存在することを確認
-                  deleteInput.checked = true;
-                }
-                // 該当imageKeyのcarouselitemを削除
-                const targetCarouselItem = document.querySelector(
-                  `.carousel-item.image-${imageKey}`
-                );
-                if (targetCarouselItem) {
-                  // 次のアイテムへ
-                  const nextItem = targetCarouselItem.nextElementSibling;
-                  const prevItem = targetCarouselItem.previousElementSibling;
-                  if (nextItem) {
-                    nextItem.classList.add("active");
-                  } else if (prevItem) {
-                    prevItem.classList.add("active");
-                  }
-                  targetCarouselItem.remove();
-                }
-                // インジケーターのアイテム数も削減
-                const targetIndicator = document.querySelector(
-                  `button[data-bs-slide-to="${index}"]`
-                );
-                if (targetIndicator) {
-                  targetIndicator.remove();
-                }
-              };
-            })(imageKey)
-          );
-
-          // 画像を作成
-          const img = document.createElement("img");
-          img.src = url;
-          img.classList.add("d-block", "w-100");
-
-          carouselItem.appendChild(img);
-          carouselInner.appendChild(carouselItem);
-
-          // カルーセルインジケータを作成
-          const indicator = document.createElement("button");
-          indicator.type = "button";
-          indicator.dataset.bsTarget = "#carouselIndicators";
-          indicator.dataset.bsSlideTo = index;
-          if (index === 0) {
-            indicator.classList.add("active");
-          }
-
-          carouselIndicators.appendChild(indicator);
+          fetch(imageUrl)
+            .then((response) => response.blob())
+            .then((blob) => {
+              const file = new File([blob], `${imageKey}.jpg`, {
+                type: "image/jpeg",
+              });
+              const dataTransfer = new DataTransfer();
+              dataTransfer.items.add(file);
+              const carouselInner =
+                modalElement.querySelector(".carousel-inner");
+              const uploadArea =
+                carouselInner.children[index].querySelector(".upload-area");
+              const fileInput = uploadArea.querySelector(".file-input");
+              fileInput.files = dataTransfer.files;
+              setValidThumbnail(fileInput, uploadArea);
+              addDeleteIcon(uploadArea);
+            });
         });
-    });
+        const carouselInner = modalElement.querySelector(".carousel-inner"); // debug
+        console.log("on editModal: ", carouselInner);
+        const count = post.image_keys.length;
+        this.resetCarouselIndicators(count, modalElement);
+        this.resetCarouselButtons(count, modalElement);
+      }
+    }
   }
+
   // コメントモーダル -----------------------------------------------------------
   showComments(event) {
     const post = JSON.parse(event.target.dataset.post);

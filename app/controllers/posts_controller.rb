@@ -68,13 +68,8 @@ class PostsController < ApplicationController
   end
 
   def update
-    puts("⚡️params[:post][:images]: #{params[:post][:images]}") 
     @post = current_user.posts.find(params[:id])
     if @post.update(post_params)
-      # Cloudinaryのキーを使用して画像を更新
-      puts("⚡️params[:post]: #{params[:post]}") 
-      puts("⚡️params[:post][:images]: #{params[:post][:images]}") 
-      update_images(@post, params[:post][:images]) # if params[:post][:images] を削除
       redirect_back(fallback_location: root_path, notice: '更新しました')
     else
       redirect_back(fallback_location: root_path, alert: '更新に失敗しました')
@@ -144,7 +139,7 @@ class PostsController < ApplicationController
       'updated_at' => post.updated_at.in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M'),
       'id' => post.id.to_s, # idを文字列に変換
       # 'images' => post.images.map { |image| url_for(image) }
-      'images' => post.images.map(&:key)
+      'image_keys' => post.images.map(&:key)
     )
   end
 end
