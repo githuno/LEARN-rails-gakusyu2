@@ -52,14 +52,12 @@ Rails.application.configure do
   config.action_mailer.raise_delivery_errors = false
 
   config.action_mailer.perform_caching = false
-  config.action_mailer.delivery_method = :sendgrid_actionmailer
+  config.action_mailer.delivery_method = :sendgrid_actionmailer # :file
   config.action_mailer.sendgrid_actionmailer_settings = {
     api_key: ENV.fetch('SENDGRID_API_KEY', nil),
     raise_delivery_errors: true
   }
-
   config.action_mailer.default_url_options = { host: 'mac-sonic.tail55100.ts.net', port: 8443 }
-  config.action_mailer.delivery_method = :file
   config.action_mailer.file_settings = { location: Rails.root.join('tmp/mail') }
 
   # Print deprecation notices to the Rails logger.
