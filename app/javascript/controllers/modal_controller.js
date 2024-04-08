@@ -32,8 +32,9 @@ class ModalController extends Controller {
 
       // 既存のカルーセルアイテムのuploadAreaの背景にセット
       uploadArea.style.backgroundImage = `url(${imageUrl})`;
-      uploadArea.style.backgroundSize = "cover"; // 画像を枠内に収める
+      uploadArea.style.backgroundSize = "contain"; // 画像を枠内に収める
       uploadArea.style.backgroundPosition = "center"; // 画像を中央に配置
+      uploadArea.style.backgroundRepeat = "no-repeat"; // 画像を繰り返さない
 
       // .upload-instructionsを削除
       const uploadInstructions = carouselItem.querySelector(
@@ -150,8 +151,9 @@ class ModalController extends Controller {
       const reader = new FileReader();
       reader.onload = (e) => {
         uploadArea.style.backgroundImage = `url(${e.target.result})`;
-        uploadArea.style.backgroundSize = "cover"; // 追加
-        uploadArea.style.backgroundPosition = "center"; // 追加
+        uploadArea.style.backgroundSize = "contain"; // 画像を枠内に収める
+        uploadArea.style.backgroundPosition = "center"; // 画像を中央に配置
+        uploadArea.style.backgroundRepeat = "no-repeat"; // 画像を繰り返さない
       };
       // ファイルが選択されているか、および画像サイズが5MBを超えていたらエラーメッセージを表示
       if (
