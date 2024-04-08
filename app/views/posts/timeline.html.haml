@@ -27,23 +27,35 @@
     - @posts.each do |post|
       .posts_card.mr-2.mb-2{ tabindex: 0 }
         .card-body.d-flex.flex-column.justify-content-between
-          .top-content
+          .top-content{ data:{
+            bs_toggle: 'modal', bs_target: '#postModal',
+            controller: 'modal', action: 'click->modal#showPost',
+            cloud: ENV['CLOUDINARY_NAME'], post: post.to_json,
+          } }
             %p.h5.card-title
               = post['content']
-            %p.card-text
-              = post['updated_at']
+            .d-flex.justify-content-center.align-items-center.position-relative.mx-auto{style: 'pointer-events: none;'}
+              - if post['image_keys'].present?
+                = cl_image_tag(post['image_keys'][0], height: 100, crop: :scale)
+                .position-absolute{ style: 'top: 10px; left: 10px; z-index: -1;' }
+                  = cl_image_tag(post['image_keys'][1], height: 100, crop: :scale)
+                .position-absolute{ style: 'top: 10px; right: 10px; z-index: -2;' }
+                  = cl_image_tag(post['image_keys'][2], height: 100, crop: :scale)
+                .position-absolute{ style: 'top: 20px; z-index: -3;' }
+                  = cl_image_tag(post['image_keys'][3], height: 100, crop: :scale)
+          %p.card-text.mt-auto.mb-0
+            = post['updated_at']
           .bottom-content
             %hr
             .row
               -# 編集 or ユーザー名
               .col-7
                 - if current_user && current_user.id == post['user_id']
-                  .bi.bi-pencil-square{'data-bs-toggle': 'modal',
-                    'data-bs-target': '#editModal',
-                    'data-controller': 'modal',
-                    'data-action': 'click->modal#editPost',
-                    'data-post': post.to_json,
-                  }
+                  .bi.bi-pencil-square{ data: { 
+                    bs_toggle: 'modal', bs_target: '#editModal',
+                    controller: 'modal', action: 'click->modal#newPost',
+                    cloud: ENV['CLOUDINARY_NAME'], post: post.to_json,
+                  } }
                 - else
                   %button.btn.btn-outline-secondary{'data-bs-toggle': 'modal',
                     'data-bs-target': '#userModal',
@@ -106,38 +118,104 @@
     = link_to 'ログアウト', destroy_user_session_path,
               data: { turbo_method: :delete },
               class: 'btn btn-outline-secondary'
-    %button.btn.btn-primary{'data-bs-toggle': 'modal',
-      'data-bs-target': '#newModal'
-    } 新規投稿
+    %button.btn.btn-primary{ data: {
+       bs_toggle: 'modal', bs_target: '#newModal',
+       controller: 'modal', action: 'click->modal#newPost',
+    } } 新規投稿
 
+-# 投稿モーダル -------------------------------------------------------------
+.modal.fade{ id: 'postModal', tabindex: '-1', 'aria-hidden': 'true' }
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %h1.modal-title.fs-5 投稿詳細
+        %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }
+      = render 'post_content'
+      .modal-body
+        .carousel.slide{ id: 'carousel-post' }
+          .carousel-indicators
+            %button{ type: 'button', 'data-bs-target': '#carousel-post',
+            'data-bs-slide-to': '0', class: 'active', 'aria-current': 'true',
+            'aria-label': "Slide 1" }
+          .carousel-inner
+            .carousel-item.active
+              .upload-area.border.border-3.border-dashed.d-flex.justify-content-center.align-items-center.text-center{ style: 'height: 300px;', id: "upload-area-0" }
+                .upload-instructions
+                  .bi.bi-plus-circle-dotted{ style: 'font-size: 2rem;' }
+          %button.carousel-control-prev{ id: 'prevButton', type: 'button', 'data-bs-target': '#carousel-post', 'data-bs-slide': 'prev', style: 'display: none;' }
+            %span.carousel-control-prev-icon{ 'aria-hidden': 'true' }
+            %span.visually-hidden Previous
+          %button.carousel-control-next{ id: 'nextButton', type: 'button', 'data-bs-target': '#carousel-post', 'data-bs-slide': 'next', style: 'display: none;' }
+            %span.carousel-control-next-icon{ 'aria-hidden': 'true' }
+            %span.visually-hidden Next
 -# 新規投稿モーダル -------------------------------------------------------------
 .modal.fade{ id: 'newModal', tabindex: '-1', 'aria-hidden': 'true' }
   .modal-dialog
     .modal-content
       .modal-header
-        %h1.modal-title.fs-5{ id: 'postModalLabel' } 新規投稿
+        %h1.modal-title.fs-5 新規投稿
         %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }
       .modal-body
-        = form_with(model: @post, local: true, class: 'mb-4') do |form|
-          = form.text_area :content, class: 'form-control', maxlength: 140
+        = form_with(model: @post, local: true, class: 'mb-4', html: { multipart: true }) do |form|
+          = form.label :content, 'テキスト'
+          = form.text_area :content, class: 'form-control', maxlength: 140, id: 'textInput'
+          = form.label :images, '画像'
+          .carousel.slide{ id: 'carpucel-new' }
+            .carousel-indicators
+              %button{ type: 'button', 'data-bs-target': '#carpucel-new',
+              'data-bs-slide-to': '0', class: 'active', 'aria-current': 'true',
+              'aria-label': "Slide 1" }
+            .carousel-inner
+              .carousel-item.active
+                .upload-area.border.border-3.border-dashed.d-flex.justify-content-center.align-items-center.text-center{ style: 'height: 300px;', id: "upload-area-0" }
+                  = form.file_field :images, multiple: true, class: 'file-input', style: 'display: none;', data: { index: "0" }, accept: 'image/jpeg,image/gif,image/png'
+                  .upload-instructions
+                    .bi.bi-plus-circle-dotted{ style: 'font-size: 2rem;' }
+            %button.carousel-control-prev{ id: 'prevButton', type: 'button', 'data-bs-target': '#carpucel-new', 'data-bs-slide': 'prev', style: 'display: none;' }
+              %span.carousel-control-prev-icon{ 'aria-hidden': 'true' }
+              %span.visually-hidden Previous
+            %button.carousel-control-next{ id: 'nextButton', type: 'button', 'data-bs-target': '#carpucel-new', 'data-bs-slide': 'next', style: 'display: none;' }
+              %span.carousel-control-next-icon{ 'aria-hidden': 'true' }
+              %span.visually-hidden Next
           .actions.mt-3.d-flex.justify-content-end.gap-5
-            = form.submit '投稿', class: 'btn btn-primary'
+            = form.submit '投稿', class: 'btn btn-primary', id: 'submitButton'
+          %p#errorElement.text-danger.mt-2
 -# 投稿編集モーダル -------------------------------------------------------------
 .modal.fade{ id: 'editModal', tabindex: '-1', 'aria-hidden': 'true' }
   .modal-dialog
     .modal-content
       .modal-header
-        %h1.modal-title.fs-5{ id: 'postModalLabel' } 編集
+        %h1.modal-title.fs-5 編集
         %button.btn-close{ 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }
       .modal-body
-        = form_with(model: @post, local: true, class: 'mb-4') do |form|
-          = form.text_area :content, class: 'form-control', maxlength: 140
+        = form_with(model: @post, local: true, class: 'mb-4', html: { multipart: true }) do |form|
+          = form.label :content, 'テキスト'
+          = form.text_area :content, class: 'form-control', maxlength: 140, id: 'textInput'
+          = form.label :images, '画像'
+          .carousel.slide{ id: 'carousel-edit' }
+            .carousel-indicators
+              %button{ type: 'button', 'data-bs-target': '#carousel-edit',
+              'data-bs-slide-to': '0', class: 'active', 'aria-current': 'true',
+              'aria-label': "Slide 1" }
+            .carousel-inner
+              .carousel-item.active
+                .upload-area.border.border-3.border-dashed.d-flex.justify-content-center.align-items-center.text-center{ style: 'height: 300px;', id: "upload-area-0" }
+                  = form.file_field :images, multiple: true, class: 'file-input', style: 'display: none;', data: { index: "0" }, accept: 'image/jpeg,image/gif,image/png'
+                  .upload-instructions
+                    .bi.bi-plus-circle-dotted{ style: 'font-size: 2rem;' }
+            %button.carousel-control-prev{ id: 'prevButton', type: 'button', 'data-bs-target': '#carousel-edit', 'data-bs-slide': 'prev', style: 'display: none;' }
+              %span.carousel-control-prev-icon{ 'aria-hidden': 'true' }
+              %span.visually-hidden Previous
+            %button.carousel-control-next{ id: 'nextButton', type: 'button', 'data-bs-target': '#carousel-edit', 'data-bs-slide': 'next', style: 'display: none;' }
+              %span.carousel-control-next-icon{ 'aria-hidden': 'true' }
+              %span.visually-hidden Next
           %p.updated-at 最終更新日時:
-          .actions.mt-3.d-flex.justify-content-end.gap-5
-            = link_to '削除', '#',
+          %p#errorElement.text-danger.mt-2
+          .actions.mt-3.d-flex.justify-content-between.gap-5
+            = link_to 'ポストを削除', '#',
                       data: { turbo_method: :delete },
-                      class: 'btn btn-danger'
-            = form.submit '更新', class: 'btn btn-primary'
+                      class: 'btn btn-outline-danger'
+            = form.submit '更新', class: 'btn btn-primary', id: 'submitButton'
 -# ユーザーモーダル -------------------------------------------------------------
 .modal.fade{ id: 'userModal', tabindex: '-1', 'aria-hidden': 'true' }
   .modal-dialog

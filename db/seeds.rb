@@ -1,6 +1,16 @@
 # メール送信を無効化
 ActionMailer::Base.perform_deliveries = false
 
+# テストユーザー
+User.create!(
+  username: 'test',
+  email: 'test@example.com',
+  password: 'testpass',
+  password_confirmation: 'testpass',
+  profile: 'This is a test user.',
+  blog_url: 'http://example.com'
+)
+
 # ユーザーのダミーデータを作成
 10.times do
   User.create!(

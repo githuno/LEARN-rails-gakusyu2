@@ -1,22 +1,23 @@
 class PostsController < ApplicationController
   before_action :authenticate_user!, only: %i[new create edit update destroy followings]
+  before_action :correct_user, only: %i[update destroy]
 
   def index
-    posts = Post.latest.limit(10)
+    posts = Post.includes(images_attachments: :blob).latest.limit(10)
     @posts = decorate(posts)
     @post = Post.new
     render :timeline
   end
 
   def idx_followings
-    posts = current_user.following_posts.latest.limit(10)
+    posts = current_user.following_posts.includes(images_attachments: :blob).latest.limit(10)
     @posts = decorate(posts)
     @post = Post.new
     render :timeline
   end
 
   def idx_likes
-    posts = current_user.liked_posts.latest.limit(10)
+    posts = current_user.liked_posts.includes(images_attachments: :blob).latest.limit(10)
     @posts = decorate(posts)
     @post = Post.new
     render :timeline
@@ -24,7 +25,7 @@ class PostsController < ApplicationController
 
   def idx_user
     @user = User.find(params[:id])
-    @posts = decorate(@user.posts.latest.limit(10))
+    @posts = decorate(@user.posts.includes(images_attachments: :blob).latest.limit(10))
     @post = Post.new
     render :timeline
   end
@@ -55,9 +56,9 @@ class PostsController < ApplicationController
   def create
     @post = current_user.posts.build(post_params)
     if @post.save
-      redirect_back(fallback_location: root_path, notice: '投稿しました。')
+      redirect_back(fallback_location: root_path, notice: '投稿しました')
     else
-      redirect_back(fallback_location: root_path, alert: '投稿に失敗しました。')
+      redirect_back(fallback_location: root_path, alert: '投稿に失敗しました')
     end
   end
 
@@ -69,16 +70,15 @@ class PostsController < ApplicationController
   def update
     @post = current_user.posts.find(params[:id])
     if @post.update(post_params)
-      redirect_back(fallback_location: root_path, notice: '更新しました。')
+      redirect_back(fallback_location: root_path, notice: '更新しました')
     else
-      redirect_back(fallback_location: root_path, alert: '更新に失敗しました。')
+      redirect_back(fallback_location: root_path, alert: '更新に失敗しました')
     end
   end
 
   def destroy
-    @post = current_user.posts.find(params[:id])
     @post.destroy
-    redirect_back(fallback_location: root_path, notice: '削除しました。')
+    redirect_back(fallback_location: root_path, notice: '削除しました')
   end
 
   # いいね機能 ------------------------------------------------------------------
@@ -101,7 +101,20 @@ class PostsController < ApplicationController
   private
 
   def post_params
-    params.require(:post).permit(:content)
+    params.require(:post).permit(:content, images: [])
+  end
+
+  def update_images(post, image_keys)
+    image_keys = image_keys.present? ? image_keys.split(',').reject(&:empty?) : []
+    post.images.includes(:blob).each do |image|
+      # Cloudinaryのキーが送信された画像に含まれていない場合、その画像を削除
+      image.purge unless image_keys.include?(image.key)
+    end
+  end
+
+  def correct_user
+    @post = current_user.posts.find_by(id: params[:id])
+    redirect_to root_path if @post.nil?
   end
 
   def decorate(posts)
@@ -124,7 +137,9 @@ class PostsController < ApplicationController
       'is_followed' => current_user&.following?(user),
       # 日本時間のyyyy/mm/dd hh:mm形式に変換
       'updated_at' => post.updated_at.in_time_zone('Tokyo').strftime('%Y/%m/%d %H:%M'),
-      'id' => post.id.to_s # idを文字列に変換
+      'id' => post.id.to_s, # idを文字列に変換
+      # 'images' => post.images.map { |image| url_for(image) }
+      'image_keys' => post.images.map(&:key)
     )
   end
 end
