@@ -58,6 +58,10 @@ Rails.application.configure do
     raise_delivery_errors: true
   }
 
+  config.action_mailer.default_url_options = { host: 'mac-sonic.tail55100.ts.net', port: 8443 }
+  config.action_mailer.delivery_method = :file
+  config.action_mailer.file_settings = { location: Rails.root.join('tmp/mail') }
+
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log
 
