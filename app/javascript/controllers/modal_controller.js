@@ -50,7 +50,7 @@ class ModalController extends Controller {
       targetModal.querySelector(".carousel")
     );
     const carouselItems = carousel._element.querySelectorAll(".carousel-item");
-
+  
     // イベントリスナーの設定
     carousel._element.addEventListener("slide.bs.carousel", () => {
       try {
@@ -62,33 +62,13 @@ class ModalController extends Controller {
         this.resetCarouselIndicators(carouselItems.length, targetModal);
       }
     });
-
+  
     // カルーセルの要素が変更された際にイベントリスナーを再設定
-    targetModal.addEventListener("DOMNodeInserted", () => {
+    const observer = new MutationObserver(() => {
       this.carouselErrorCatcher(targetModal);
     });
-  }
-  resetModal(targetModal) {
-    // モーダルが閉じられたときに発生するイベント
-    targetModal.addEventListener('hidden.bs.modal', (event) => {
-      // モーダル内のコンテンツを初期化するコードをここに書く
-      const contentElement = targetModal.querySelector("#postContent");
-      const dateElement = targetModal.querySelector("#postUpdatedAt");
-      const carouselInner = targetModal.querySelector(".carousel-inner");
-      const carouselIndicators = targetModal.querySelector(".carousel-indicators");
-
-      // コンテンツと日付を空にする
-      contentElement.textContent = '';
-      dateElement.textContent = '';
-
-      // カルーセルのアイテムとインジケーターを全て削除
-      while (carouselInner.firstChild) {
-        carouselInner.removeChild(carouselInner.firstChild);
-      }
-      while (carouselIndicators.firstChild) {
-        carouselIndicators.removeChild(carouselIndicators.firstChild);
-      }
-    });
+  
+    observer.observe(targetModal, { childList: true, subtree: true });
   }
 
   // 投稿詳細モーダル -----------------------------------------------------------
@@ -103,7 +83,6 @@ class ModalController extends Controller {
 
     this.fillPostContent(post, modalElement);
     this.carouselErrorCatcher(modalElement);
-    this.resetModal(modalElement);
   }
 
   resetCarouselIndicators = (count, targetModal) => {
