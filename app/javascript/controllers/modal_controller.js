@@ -10,13 +10,15 @@ class ModalController extends Controller {
     contentElement.textContent = post.content;
     dateElement.textContent = post.updated_at;
   }
-  setImages = (imagekeys, targetModal, templateElement) => {
-    const carouselInner = targetModal.querySelector(".carousel-inner");
-    const carouselId = targetModal.querySelector(".carousel").id;
+  setImages = (event, imagekeys, targetModal, templateElement) => {
+    const body = targetModal.querySelector(".modal-body");
+    const carouselInner = body.querySelector(".carousel-inner");
+    const carouselId = body.querySelector(".carousel").id;
     if (imagekeys.length === 0) {
-      carouselInner.remove();
+      body.style.display = "none";
       return;
     }
+    body.style.display = "block";
     const cloudinaryName = event.target.dataset.cloud;
     for (let i = 0; i < imagekeys.length; i++) {
       if (!carouselInner.children[i]) {
@@ -73,14 +75,11 @@ class ModalController extends Controller {
 
   // 投稿詳細モーダル -----------------------------------------------------------
   showPost(event) {
-    const post = JSON.parse(event.target.dataset.post);
     const modalElement = document.getElementById("postModal");
+    const post = JSON.parse(event.currentTarget.dataset.post);
     const carouselItem = modalElement.querySelector(".carousel-item");
-    if(carouselItem) {
-      const carouselItemTemplate = carouselItem.cloneNode(true);
-      this.setImages(post.image_keys, modalElement, carouselItemTemplate);
-    }
-
+    const carouselItemTemplate = carouselItem.cloneNode(true);
+    this.setImages(event, post.image_keys, modalElement, carouselItemTemplate);
     this.fillPostContent(post, modalElement);
     this.carouselErrorCatcher(modalElement);
   }
