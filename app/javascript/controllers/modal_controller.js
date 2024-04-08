@@ -57,7 +57,7 @@ class ModalController extends Controller {
         const currentIndex = Array.from(carouselItems).indexOf(
           targetModal.querySelector(".carousel-item.active")
         );
-        console.log(currentIndex);
+        console.log("slide: " ,currentIndex);
       } catch (error) {
         this.resetCarouselIndicators(carouselItems.length, targetModal);
       }
@@ -294,7 +294,6 @@ class ModalController extends Controller {
           tempFile = null;
         }
 
-        console.log("on fileInput change: ", fileInput.files);
         setValidThumbnail(fileInput, uploadArea);
         addDeleteIcon(uploadArea);
         const carouselIndicators = modalElement.querySelector(
@@ -369,8 +368,6 @@ class ModalController extends Controller {
               addDeleteIcon(uploadArea);
             });
         });
-        const carouselInner = modalElement.querySelector(".carousel-inner"); // debug
-        console.log("on editModal: ", carouselInner);
         const count = post.image_keys.length;
         this.resetCarouselIndicators(count, modalElement);
         this.resetCarouselButtons(count, modalElement);
