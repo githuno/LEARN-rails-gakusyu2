@@ -1,4 +1,4 @@
 class ApplicationMailer < ActionMailer::Base
-  default from: 'clas.warehouse@gmail.com'
+  default from: ENV.fetch('MAILER_SENDER', nil)
   layout 'mailer'
 end
