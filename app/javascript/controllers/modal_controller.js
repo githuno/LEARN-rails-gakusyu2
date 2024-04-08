@@ -70,14 +70,15 @@ class ModalController extends Controller {
   }
   // 投稿詳細モーダル -----------------------------------------------------------
   showPost(event) {
+    const post = JSON.parse(event.target.dataset.post);
     const modalElement = document.getElementById("postModal");
     const carouselItem = modalElement.querySelector(".carousel-item");
-    const carouselItemTemplate = carouselItem.cloneNode(true);
-    console.log("showPost: ", event.target.dataset.post);
-    const post = JSON.parse(event.target.dataset.post);
+    if(carouselItem) {
+      const carouselItemTemplate = carouselItem.cloneNode(true);
+      this.setImages(post.image_keys, modalElement, carouselItemTemplate);
+    }
 
     this.fillPostContent(post, modalElement);
-    this.setImages(post.image_keys, modalElement, carouselItemTemplate);
     this.carouselErrorCatcher(modalElement);
   }
 

@@ -27,13 +27,11 @@
     - @posts.each do |post|
       .posts_card.mr-2.mb-2{ tabindex: 0 }
         .card-body.d-flex.flex-column.justify-content-between
-          .top-content{ 'data-bs-toggle': 'modal',
-                    'data-bs-target': '#postModal',
-                    'data-controller': 'modal',
-                    'data-action': 'click->modal#showPost',
-                    'data-cloud': ENV['CLOUDINARY_NAME'],
-                    'data-post': post.to_json
-          }
+          .top-content{ data:{
+            bs_toggle: 'modal', bs_target: '#postModal',
+            controller: 'modal', action: 'click->modal#showPost',
+            cloud: ENV['CLOUDINARY_NAME'], post: post.to_json,
+          } }
             %p.h5.card-title
               = post['content']
             .d-flex.justify-content-center.align-items-center.position-relative.mx-auto{style: 'pointer-events: none;'}
