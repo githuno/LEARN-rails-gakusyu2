@@ -27,6 +27,7 @@
     - @posts.each do |post|
       .posts_card.mr-2.mb-2{ tabindex: 0 }
         .card-body.d-flex.flex-column.justify-content-between
+          - puts("⚡ #showPost", post.to_json )
           .top-content{ data:{
             bs_toggle: 'modal', bs_target: '#postModal',
             controller: 'modal', action: 'click->modal#showPost',
@@ -65,6 +66,7 @@
                     'data-post': post.to_json,
                     'data-root': 'timeline',
                   }= post['username']
+                  - puts("⚡ #showUser", post.to_json )
               -# コメント
               .col-2{'data-bs-toggle': 'modal',
                 'data-bs-target': '#commentModal',
