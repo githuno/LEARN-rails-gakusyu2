@@ -73,6 +73,7 @@ class ModalController extends Controller {
     const modalElement = document.getElementById("postModal");
     const carouselItem = modalElement.querySelector(".carousel-item");
     const carouselItemTemplate = carouselItem.cloneNode(true);
+    console.log("showPost: ", event.target.dataset.post);
     const post = JSON.parse(event.target.dataset.post);
 
     this.fillPostContent(post, modalElement);
