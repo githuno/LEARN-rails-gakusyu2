@@ -6,8 +6,6 @@
       /* Email styles need to be inline */
       .card {
         position: relative;
-        display: flex;
-        flex-direction: column;
         min-width: 0;
         word-wrap: break-word;
         background-color: #fff;
@@ -37,8 +35,6 @@
         margin-top: .5rem!important;
       }
       .list-group {
-        display: flex;
-        flex-direction: column;
         padding-left: 0;
         margin-bottom: 0;
       }
@@ -55,6 +51,9 @@
       .flex {
         flex: 1 1 auto!important;
       }
+      .flex-column {
+        flex-direction: column!important;
+      }
       .flex-items-center {
         align-items: center!important;
       }
@@ -70,6 +69,8 @@
       .justify-content-between {
         justify-content: space-between!important;
       }
-
+      .ml-auto {
+        margin-left: auto!important;
+      }
   %body
     = yield
